@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: #213547;
+  background-color: #ffffff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Font serif cho tiêu đề và tên cung */
+.font-serif {
+  font-family: 'Noto Serif', 'Georgia', serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f0e8;
+}
+::-webkit-scrollbar-thumb {
+  background: #c4a882;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a68b6a;
+}
