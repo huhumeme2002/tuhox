@@ -27,10 +27,14 @@ function getYearCanMap(yearCan: Can): Record<number, Can> {
   const canIndex = CAN.indexOf(canDau);
   const map: Record<number, Can> = {};
   for (let i = 0; i < 12; i++) {
-    // Dần (index 2) là canDau, sau đó tăng dần theo chiều kim đồng hồ
+    // Dần (index 2) là canDau; dịch theo 12 cung rồi mới quay vòng 10 can.
     map[i] = CAN[(canIndex + (i - 2 + 12) % 12) % 10];
   }
   return map;
+}
+
+function getGocCan(chart: TuViChart): Can {
+  return (chart.canChi.year.split(' ')[0] as Can) ?? CAN[0];
 }
 
 interface Props {
@@ -58,12 +62,13 @@ function calculateExtendedLocKy(
 ) {
   const locResult: number[] = [];
   const kyResult: number[] = [];
-  let isInfinite = false;
+  let locInfinite = false;
+  let kyInfinite = false;
 
   const [hoaLoc, , , hoaKy] = TU_HOA_TABLE[startCan];
   const l1 = palaces.findIndex((p) => p.stars.some((s) => s.name === hoaLoc));
   const k1 = palaces.findIndex((p) => p.stars.some((s) => s.name === hoaKy));
-  if (l1 === -1 || k1 === -1) return { loc: locResult, ky: kyResult, isInfinite };
+  if (l1 === -1 || k1 === -1) return { loc: locResult, ky: kyResult, locInfinite, kyInfinite, isInfinite: false };
 
   // Lộc mở rộng
   let lTriggers = [l1, (l1 + 6) % 12, (l1 + 11) % 12];
@@ -78,7 +83,7 @@ function calculateExtendedLocKy(
     const lNext6 = (lNext + 11) % 12;
     locResult.push(lNext, lNext5, lNext6);
     if (gocLocPalaces.has(lNext)) {
-      isInfinite = true;
+      locInfinite = true;
       break;
     }
     lTriggers = [lNext, lNext5, lNext6];
@@ -97,13 +102,31 @@ function calculateExtendedLocKy(
     const kNext6 = (kNext + 11) % 12;
     kyResult.push(kNext, kNext5, kNext6);
     if (gocKyPalaces.has(kNext)) {
-      isInfinite = true;
+      kyInfinite = true;
       break;
     }
     kTriggers = [kNext, kNext5, kNext6];
   }
 
-  return { loc: locResult, ky: kyResult, isInfinite };
+  return { loc: locResult, ky: kyResult, locInfinite, kyInfinite, isInfinite: locInfinite || kyInfinite };
+}
+
+function getStrengthLabel(level: number, distance: number, type: 'Lộc' | 'Kỵ', isMenh: boolean) {
+  const raw = level - distance + (isMenh ? 0.5 : 0);
+  let rank = 0;
+  if (raw >= 3.5) rank = 4;
+  else if (raw >= 2.5) rank = 3;
+  else if (raw >= 1.5) rank = 2;
+  else if (raw >= 0.5) rank = 1;
+
+  if (distance === 1) rank = Math.min(rank, 3);
+  if (distance >= 2) rank = Math.min(rank, 1);
+
+  if (rank >= 4) return type === 'Lộc' ? 'Cực mạnh' : 'Cực nặng';
+  if (rank >= 3) return type === 'Lộc' ? 'Rất mạnh' : 'Rất nặng';
+  if (rank >= 2) return type === 'Lộc' ? 'Mạnh' : 'Nặng';
+  if (rank >= 1) return 'Vừa';
+  return 'Nhẹ';
 }
 
 export interface AffectedDaiVan {
@@ -238,7 +261,7 @@ export function TuViBoard({ chart }: Props) {
   const gocTuHoaPalaces = useMemo(() => {
     const loc = new Set<number>();
     const ky = new Set<number>();
-    const gocCan = (chart.canChi.year.split(' ')[0] as Can) ?? CAN[0];
+    const gocCan = getGocCan(chart);
     const [hoaLoc, , , hoaKy] = TU_HOA_TABLE[gocCan];
     for (const p of palaces) {
       for (const s of p.stars) {
@@ -247,7 +270,7 @@ export function TuViBoard({ chart }: Props) {
       }
     }
     return { loc, ky };
-  }, [chart.canChi.year, palaces]);
+  }, [chart, palaces]);
 
   // Tên vai trò của một cung trong Đại Vận đang chọn
   const getDaiVanRoleName = useMemo(() => {
@@ -294,12 +317,13 @@ export function TuViBoard({ chart }: Props) {
 
   const namExtendedLocKy = useMemo(() => {
     if (namRoleCungIndex === null) return null;
+    // K1-K3 đi theo lớp đang xem, nhưng can của cung trigger trong chuỗi mở rộng lấy theo lá số gốc.
     return calculateExtendedLocKy(
       getActiveCan(namRoleCungIndex),
       palaces,
       gocTuHoaPalaces.loc,
       gocTuHoaPalaces.ky,
-      getActiveCan
+      (index: number) => palaces[index].can
     );
   }, [namRoleCungIndex, getActiveCan, palaces, gocTuHoaPalaces]);
 
@@ -342,17 +366,8 @@ export function TuViBoard({ chart }: Props) {
 
     const clickRoleName = CUNG_NAMES[clickRoleIndex];
 
-    const getStrengthLabel = (level: number, distance: number, type: 'Lộc' | 'Kỵ', isMenh: boolean) => {
-      const score = level - distance + (isMenh ? 0.5 : 0);
-      if (score >= 3.5) return type === 'Lộc' ? 'Cực mạnh' : 'Cực nặng';
-      if (score >= 2.5) return type === 'Lộc' ? 'Rất mạnh' : 'Rất nặng';
-      if (score >= 1.5) return type === 'Lộc' ? 'Mạnh' : 'Nặng';
-      if (score >= 0.5) return 'Vừa';
-      return 'Nhẹ';
-    };
-
     const addImpacts = (
-      sourceLocKy: { loc: readonly number[]; ky: readonly number[]; isInfinite?: boolean } | null,
+      sourceLocKy: { loc: readonly number[]; ky: readonly number[]; isInfinite?: boolean; locInfinite?: boolean; kyInfinite?: boolean } | null,
       targetMenhIndex: number | null,
       targetRoleIndex: number | null,
       distance: number,
@@ -372,7 +387,7 @@ export function TuViBoard({ chart }: Props) {
           label: `L${level}`,
           target: isMenh ? `Mệnh ${targetLayerName}` : `${clickRoleName} ${targetLayerName}`,
           strengthLabel: getStrengthLabel(level, distance, 'Lộc', isMenh),
-          isInfinite: extended ? sourceLocKy.isInfinite : undefined,
+          isInfinite: extended ? sourceLocKy.locInfinite : undefined,
           sourceRole: clickRoleName,
         });
       });
@@ -386,7 +401,7 @@ export function TuViBoard({ chart }: Props) {
           label: `K${level}`,
           target: isMenh ? `Mệnh ${targetLayerName}` : `${clickRoleName} ${targetLayerName}`,
           strengthLabel: getStrengthLabel(level, distance, 'Kỵ', isMenh),
-          isInfinite: extended ? sourceLocKy.isInfinite : undefined,
+          isInfinite: extended ? sourceLocKy.kyInfinite : undefined,
           sourceRole: clickRoleName,
         });
       });
@@ -572,13 +587,11 @@ export function TuViBoard({ chart }: Props) {
       }
     }
 
-    const getStrengthLabel = (level: number, distance: number, type: 'Lộc' | 'Kỵ', isMenh: boolean) => {
-      const score = level - distance + (isMenh ? 0.5 : 0);
-      if (score >= 3.5) return type === 'Lộc' ? 'Cực mạnh' : 'Cực nặng';
-      if (score >= 2.5) return type === 'Lộc' ? 'Rất mạnh' : 'Rất nặng';
-      if (score >= 1.5) return type === 'Lộc' ? 'Mạnh' : 'Nặng';
-      if (score >= 0.5) return 'Vừa';
-      return 'Nhẹ';
+    type YearImpactDetail = {
+      text: string;
+      point: number;
+      good: boolean;
+      target: string;
     };
 
     const result: {
@@ -588,7 +601,7 @@ export function TuViBoard({ chart }: Props) {
       chi: string;
       score: number;
       level: 'very-good' | 'good' | 'neutral' | 'bad' | 'very-bad';
-      details: { text: string; point: number; good: boolean }[];
+      details: YearImpactDetail[];
     }[] = [];
 
     // Lộc/Kỵ của Quan Vận (Đại Vận) — tính theo Can gốc của cung đang click trong Đại Vận
@@ -597,6 +610,17 @@ export function TuViBoard({ chart }: Props) {
     if (!dvRoleLocKy) return null;
     const dvExtendedLocKy = calculateExtendedLocKy(
       dvRoleCan,
+      palaces,
+      gocLocPalaces,
+      gocKyPalaces,
+      (index: number) => palaces[index].can
+    );
+    const gocRoleIndex = (gocMenhIndex + clickRoleIndex) % 12;
+    const gocRoleCan = palaces[gocRoleIndex].can;
+    const gocRoleLocKy = calculateLocKy(gocRoleCan, palaces);
+    if (!gocRoleLocKy) return null;
+    const gocExtendedLocKy = calculateExtendedLocKy(
+      gocRoleCan,
       palaces,
       gocLocPalaces,
       gocKyPalaces,
@@ -617,14 +641,14 @@ export function TuViBoard({ chart }: Props) {
         palaces,
         gocLocPalaces,
         gocKyPalaces,
-        (index: number) => yearCanMap[index]
+        (index: number) => palaces[index].can
       );
 
-      const details: { text: string; point: number; good: boolean }[] = [];
+      const details: YearImpactDetail[] = [];
       let score = 0;
 
       const addImpacts = (
-        sourceLocKy: { loc: readonly number[]; ky: readonly number[]; isInfinite?: boolean },
+        sourceLocKy: { loc: readonly number[]; ky: readonly number[]; isInfinite?: boolean; locInfinite?: boolean; kyInfinite?: boolean },
         targetMenhIndex: number | null,
         targetRoleIndex: number | null,
         distance: number,
@@ -636,67 +660,71 @@ export function TuViBoard({ chart }: Props) {
         const startLevel = extended ? 4 : 1;
         const maxExtendedItems = 6; // L4-L6 / K4-K6
         const sameTarget = targetMenhIndex === targetRoleIndex;
-        const sourceLabel = `${selectedCungName} ${sourceLayerName === 'Vận' ? 'Vận' : 'năm'}`;
+        const sourceLabel = `${selectedCungName} ${sourceLayerName}`;
 
         const locList = extended ? sourceLocKy.loc.slice(0, maxExtendedItems) : sourceLocKy.loc;
         const kyList = extended ? sourceLocKy.ky.slice(0, maxExtendedItems) : sourceLocKy.ky;
+        const pushImpactSeries = (
+          type: 'Lộc' | 'Kỵ',
+          hits: readonly number[],
+          infinite: boolean | undefined
+        ) => {
+          const isGood = type === 'Lộc';
+          const symbol = isGood ? 'L' : 'K';
+          const infiniteLevel = hits.length + startLevel;
+          const infiniteMenh = Boolean(infinite && hits.some((idx) => idx === targetMenhIndex));
+          const infiniteRole = Boolean(infinite && !sameTarget && hits.some((idx) => idx === targetRoleIndex));
 
-        locList.forEach((idx, i) => {
-          const level = i + startLevel;
-          const isMenh = idx === targetMenhIndex;
-          const isRole = idx === targetRoleIndex;
-          if (!isMenh && !isRole) return;
-          if (sameTarget && !isMenh) return; // tránh ghi nhận trùng khi Mệnh và vai trò trùng cung
-          const target = isMenh ? `Mệnh ${targetLayerName}` : `${selectedCungName} ${targetLayerName}`;
-          const strength = getStrengthLabel(level, distance, 'Lộc', isMenh);
-          const point = level - distance + (isMenh ? 0.5 : 0);
-          score += point;
-          details.push({ text: `L${level} ${sourceLabel} xung vào ${target} (${strength})`, point, good: true });
-        });
-        kyList.forEach((idx, i) => {
-          const level = i + startLevel;
-          const isMenh = idx === targetMenhIndex;
-          const isRole = idx === targetRoleIndex;
-          if (!isMenh && !isRole) return;
-          if (sameTarget && !isMenh) return;
-          const target = isMenh ? `Mệnh ${targetLayerName}` : `${selectedCungName} ${targetLayerName}`;
-          const strength = getStrengthLabel(level, distance, 'Kỵ', isMenh);
-          const point = -(level - distance + (isMenh ? 0.5 : 0));
-          score += point;
-          details.push({ text: `K${level} ${sourceLabel} xung vào ${target} (${strength})`, point, good: false });
-        });
+          hits.forEach((idx, i) => {
+            const level = i + startLevel;
+            const isMenh = idx === targetMenhIndex;
+            const isRole = idx === targetRoleIndex;
+            if (!isMenh && !isRole) return;
+            if (sameTarget && !isMenh) return;
+            if ((isMenh && infiniteMenh) || (isRole && infiniteRole)) return;
 
-        // Nếu chuỗi mở rộng vô hạn, ghi nhận một dòng duy nhất
-        if (extended && sourceLocKy.isInfinite) {
-          const locHit = sourceLocKy.loc.some((idx) => idx === targetMenhIndex || idx === targetRoleIndex);
-          const kyHit = sourceLocKy.ky.some((idx) => idx === targetMenhIndex || idx === targetRoleIndex);
-          if (locHit) {
-            const level = sourceLocKy.loc.length + startLevel;
-            const isMenh = sourceLocKy.loc.some((idx) => idx === targetMenhIndex);
             const target = isMenh ? `Mệnh ${targetLayerName}` : `${selectedCungName} ${targetLayerName}`;
-            const strength = getStrengthLabel(level, distance, 'Lộc', isMenh);
-            const point = level - distance + (isMenh ? 0.5 : 0);
+            const strength = getStrengthLabel(level, distance, type, isMenh);
+            const point = (level - distance + (isMenh ? 0.5 : 0)) * (isGood ? 1 : -1);
             score += point;
-            details.push({ text: `L${level} ${sourceLabel} xung vào ${target} (${strength}) (Vô hạn)`, point, good: true });
-          }
-          if (kyHit) {
-            const level = sourceLocKy.ky.length + startLevel;
-            const isMenh = sourceLocKy.ky.some((idx) => idx === targetMenhIndex);
+            details.push({ text: `${symbol}${level} ${sourceLabel} xung vào ${target} (${strength})`, point, good: isGood, target });
+          });
+
+          if (!infinite) return;
+
+          const pushInfinite = (isMenh: boolean) => {
             const target = isMenh ? `Mệnh ${targetLayerName}` : `${selectedCungName} ${targetLayerName}`;
-            const strength = getStrengthLabel(level, distance, 'Kỵ', isMenh);
-            const point = -(level - distance + (isMenh ? 0.5 : 0));
+            const strength = getStrengthLabel(infiniteLevel, distance, type, isMenh);
+            const point = (infiniteLevel - distance + (isMenh ? 0.5 : 0)) * (isGood ? 1 : -1);
             score += point;
-            details.push({ text: `K${level} ${sourceLabel} xung vào ${target} (${strength}) (Vô hạn)`, point, good: false });
-          }
-        }
+            details.push({
+              text: `${symbol}∞ ${sourceLabel} xung vào ${target} (${strength}, khởi từ ${symbol}${startLevel}) (Vô hạn)`,
+              point,
+              good: isGood,
+              target,
+            });
+          };
+
+          if (infiniteMenh) pushInfinite(true);
+          if (infiniteRole) pushInfinite(false);
+        };
+
+        pushImpactSeries('Lộc', locList, extended ? sourceLocKy.locInfinite : false);
+        pushImpactSeries('Kỵ', kyList, extended ? sourceLocKy.kyInfinite : false);
       };
 
       // Đại Vận → Đại Vận (tự xung): ảnh hưởng đến Mệnh Vận và Quan Vận
       addImpacts(dvRoleLocKy, activeDaiVanCungIndex, selectedCungIndex, 0, 'Vận', 'Vận');
       addImpacts(dvExtendedLocKy, activeDaiVanCungIndex, selectedCungIndex, 0, 'Vận', 'Vận', true);
+      // Tiên thiên → Năm: ảnh hưởng đến Mệnh năm và cùng vai trò năm
+      addImpacts(gocRoleLocKy, chiIndex, namRoleIndex, 2, 'tiên thiên', 'năm');
+      addImpacts(gocExtendedLocKy, chiIndex, namRoleIndex, 2, 'tiên thiên', 'năm', true);
       // Đại Vận → Năm: ảnh hưởng đến Mệnh năm và Quan Lộc năm
       addImpacts(dvRoleLocKy, chiIndex, namRoleIndex, 1, 'Vận', 'năm');
       addImpacts(dvExtendedLocKy, chiIndex, namRoleIndex, 1, 'Vận', 'năm', true);
+      // Năm → Tiên thiên: ảnh hưởng đến Mệnh gốc và cùng vai trò gốc
+      addImpacts(namRoleLocKy, gocMenhIndex, gocRoleIndex, 2, 'năm', 'tiên thiên');
+      addImpacts(namExtendedLocKy, gocMenhIndex, gocRoleIndex, 2, 'năm', 'tiên thiên', true);
       // Năm → Đại Vận: ảnh hưởng đến Mệnh Vận và Quan Vận
       addImpacts(namRoleLocKy, activeDaiVanCungIndex, selectedCungIndex, 1, 'năm', 'Vận');
       addImpacts(namExtendedLocKy, activeDaiVanCungIndex, selectedCungIndex, 1, 'năm', 'Vận', true);
@@ -714,7 +742,7 @@ export function TuViBoard({ chart }: Props) {
     }
 
     return result.sort((a, b) => b.score - a.score);
-  }, [selectedCungIndex, selectedDaiVan, currentDaiVan, activeDaiVanCungIndex, palaces, daiVanOptions, chart.lunarDate.year, chart.canChi.year]);
+  }, [selectedCungIndex, selectedDaiVan, currentDaiVan, activeDaiVanCungIndex, gocMenhIndex, palaces, daiVanOptions, chart.lunarDate.year, chart.canChi.year]);
 
   const getLevelLabel = (level: string) => {
     switch (level) {
@@ -725,6 +753,52 @@ export function TuViBoard({ chart }: Props) {
       case 'very-bad': return { text: 'Rất xấu', color: 'text-red-700 bg-red-100 ring-red-300' };
       default: return { text: '', color: '' };
     }
+  };
+
+  const getTargetLayerOrder = (target: string) => {
+    if (target.includes('tiên thiên')) return 0;
+    if (target.includes('Vận')) return 1;
+    if (target.includes('năm')) return 2;
+    return 3;
+  };
+
+  const renderYearImpactGroups = (
+    details: { text: string; point: number; good: boolean; target: string }[],
+    prefix: string
+  ) => {
+    const grouped = details.reduce<Array<{ target: string; items: typeof details; firstIndex: number }>>((acc, detail, index) => {
+      const existing = acc.find((group) => group.target === detail.target);
+      if (existing) {
+        existing.items.push(detail);
+      } else {
+        acc.push({ target: detail.target, items: [detail], firstIndex: index });
+      }
+      return acc;
+    }, []);
+
+    grouped.sort((a, b) => {
+      const layerDiff = getTargetLayerOrder(a.target) - getTargetLayerOrder(b.target);
+      if (layerDiff !== 0) return layerDiff;
+      const menhDiff = Number(!a.target.startsWith('Mệnh')) - Number(!b.target.startsWith('Mệnh'));
+      if (menhDiff !== 0) return menhDiff;
+      return a.firstIndex - b.firstIndex;
+    });
+
+    return grouped.map(({ target, items }, groupIndex) => (
+      <div key={`${prefix}-${groupIndex}`} className="mt-1 first:mt-0">
+        <p className="text-[11px] md:text-xs font-semibold text-gray-800">{target}</p>
+        <ul className="mt-0.5 space-y-0.5">
+          {items.map((detail, detailIndex) => (
+            <li
+              key={`${prefix}-${groupIndex}-${detailIndex}`}
+              className={`text-[11px] md:text-xs ${detail.good ? 'text-blue-700' : 'text-red-700'}`}
+            >
+              {detail.text} ({detail.point > 0 ? '+' : ''}{detail.point})
+            </li>
+          ))}
+        </ul>
+      </div>
+    ));
   };
 
   return (
@@ -1272,9 +1346,28 @@ export function TuViBoard({ chart }: Props) {
               return `${layer} ${meaning} ${quality} ở ${item.target}`;
             };
 
-            const renderItems = (items: KetLuanItem[]) => (
+            const renderItems = (items: KetLuanItem[]) => {
+              const getLabelLevel = (label: string) => {
+                const match = label.match(/\d+/);
+                return match ? Number.parseInt(match[0], 10) : Number.MAX_SAFE_INTEGER;
+              };
+
+              const sortedItems = [...items].sort((a, b) => {
+                const layerDiff = getTargetLayerOrder(a.target) - getTargetLayerOrder(b.target);
+                if (layerDiff !== 0) return layerDiff;
+
+                const menhDiff = Number(!a.target.startsWith('Mệnh')) - Number(!b.target.startsWith('Mệnh'));
+                if (menhDiff !== 0) return menhDiff;
+
+                const labelDiff = getLabelLevel(a.label) - getLabelLevel(b.label);
+                if (labelDiff !== 0) return labelDiff;
+
+                return a.label.localeCompare(b.label);
+              });
+
+              return (
               <ul className="list-disc list-inside ml-2 text-gray-800 space-y-1.5">
-                {items.map((item, idx) => (
+                {sortedItems.map((item, idx) => (
                   <li key={`kl-${idx}`} className="leading-relaxed">
                     <span className={`font-bold ${item.type === 'Lộc' ? 'text-blue-700' : 'text-gray-900'}`}>{item.label}</span>
                     {' '}xung vào{' '}
@@ -1287,7 +1380,8 @@ export function TuViBoard({ chart }: Props) {
                   </li>
                 ))}
               </ul>
-            );
+              );
+            };
 
             const hasTienThien = ketLuan.tienThien.length > 0;
             const hasDaiVan = ketLuan.daiVan.length > 0;
@@ -1332,10 +1426,13 @@ export function TuViBoard({ chart }: Props) {
             Năm đẹp & xấu cho {selectedCungIndex !== null ? (getDaiVanRoleName?.(selectedCungIndex) ?? palaces[selectedCungIndex].name) + ' Vận' : ''} trong Đại Vận {selectedDaiVan ?? currentDaiVan}
           </h4>
           <p className="text-xs md:text-sm text-gray-600 mb-4 leading-relaxed">
-            Phân tích ảnh hưởng giữa <strong>Đại Vận</strong> và <strong>Năm</strong> (bỏ Tiên thiên),
-            bao gồm tự xung Đại Vận → Đại Vận, Năm → Năm và ảnh hưởng chéo giữa hai tầng,
+            Phân tích ảnh hưởng giữa <strong>Tiên thiên</strong>, <strong>Đại Vận</strong> và <strong>Năm</strong>,
+            bao gồm Tiên thiên → Năm, Năm → Tiên thiên, Đại Vận → Năm, Năm → Đại Vận và các tự xung của từng tầng thay đổi theo năm,
             có tính cả Lộc/Kỵ mở rộng (L4+/K4+) và vô hạn.
             Điểm càng cao càng tốt, càng thấp càng xấu.
+          </p>
+          <p className="text-[11px] md:text-xs text-gray-500 mb-4">
+            Ghi chú: ảnh hưởng giữa Tiên thiên và Đại Vận là phần cố định trong suốt Đại Vận này, nên không cộng vào xếp hạng từng năm.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1356,13 +1453,9 @@ export function TuViBoard({ chart }: Props) {
                         </span>
                       </div>
                       <p className="text-[11px] md:text-xs text-gray-500 mb-1">Tuổi âm: {item.age}</p>
-                      <ul className="space-y-0.5">
-                        {item.details.map((d, i) => (
-                          <li key={`good-detail-${item.year}-${i}`} className={`text-[11px] md:text-xs ${d.good ? 'text-blue-700' : 'text-red-700'}`}>
-                            {d.text} ({d.point > 0 ? '+' : ''}{d.point})
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="space-y-1">
+                        {renderYearImpactGroups(item.details, `good-detail-${item.year}`)}
+                      </div>
                     </div>
                   );
                 })}
@@ -1386,13 +1479,9 @@ export function TuViBoard({ chart }: Props) {
                         </span>
                       </div>
                       <p className="text-[11px] md:text-xs text-gray-500 mb-1">Tuổi âm: {item.age}</p>
-                      <ul className="space-y-0.5">
-                        {item.details.map((d, i) => (
-                          <li key={`bad-detail-${item.year}-${i}`} className={`text-[11px] md:text-xs ${d.good ? 'text-blue-700' : 'text-red-700'}`}>
-                            {d.text} ({d.point > 0 ? '+' : ''}{d.point})
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="space-y-1">
+                        {renderYearImpactGroups(item.details, `bad-detail-${item.year}`)}
+                      </div>
                     </div>
                   );
                 })}
