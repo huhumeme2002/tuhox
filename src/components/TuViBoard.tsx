@@ -220,6 +220,7 @@ export function TuViBoard({ chart }: Props) {
   const [currentAge, setCurrentAge] = useState<number | null>(null);
   const [showYearRanking, setShowYearRanking] = useState(false);
   const [showQuaiYearRanking, setShowQuaiYearRanking] = useState(false);
+  const [hideMenhImpacts, setHideMenhImpacts] = useState(false);
   const [quaiBirthYear, setQuaiBirthYear] = useState<number | null>(null);
   const [quaiSelectedDaiVan, setQuaiSelectedDaiVan] = useState<number | null>(null);
   const [quaiSelectedYear, setQuaiSelectedYear] = useState<number | null>(() => getCurrentLunarYear());
@@ -690,9 +691,13 @@ export function TuViBoard({ chart }: Props) {
   }, [viewMode, selectedYear, selectedCungIndex, clickRoleIndex, gocMenhIndex, activeDaiVanCungIndex, activeMenhIndex, gocRoleCungIndex, daiVanRoleCungIndex, namRoleCungIndex, gocLocKy, daiVanLocKy, namLocKy, gocExtendedLocKy, daiVanExtendedLocKy, namExtendedLocKy]);
 
   const visibleKetLuan = useMemo(() => {
+    const filterItems = (items: KetLuanItem[]) => (
+      hideMenhImpacts ? items.filter((item) => !item.target.startsWith('Mệnh')) : items
+    );
+
     if (viewMode === 'tienThien') {
       return {
-        tienThien: ketLuan.tienThien,
+        tienThien: filterItems(ketLuan.tienThien),
         daiVan: [] as KetLuanItem[],
         nam: [] as KetLuanItem[],
       };
@@ -700,14 +705,18 @@ export function TuViBoard({ chart }: Props) {
 
     if (viewMode === 'daiVan') {
       return {
-        tienThien: ketLuan.tienThien,
-        daiVan: ketLuan.daiVan,
+        tienThien: filterItems(ketLuan.tienThien),
+        daiVan: filterItems(ketLuan.daiVan),
         nam: [] as KetLuanItem[],
       };
     }
 
-    return ketLuan;
-  }, [viewMode, ketLuan]);
+    return {
+      tienThien: filterItems(ketLuan.tienThien),
+      daiVan: filterItems(ketLuan.daiVan),
+      nam: filterItems(ketLuan.nam),
+    };
+  }, [viewMode, ketLuan, hideMenhImpacts]);
 
 
 
@@ -1324,12 +1333,23 @@ export function TuViBoard({ chart }: Props) {
     return 3;
   };
 
+  const isMenhRelatedImpact = useCallback((detail: Pick<ImpactDetail, 'target' | 'text'>) => {
+    if (detail.target.trim().startsWith('Mệnh')) return true;
+    return /(^|\s)Mệnh(\s|$)/.test(detail.text);
+  }, []);
+
+  const getVisibleImpactDetails = useCallback((details: ImpactDetail[]) => {
+    if (!hideMenhImpacts) return details;
+    return details.filter((detail) => !isMenhRelatedImpact(detail));
+  }, [hideMenhImpacts, isMenhRelatedImpact]);
+
   const renderYearImpactGroups = (
     details: ImpactDetail[],
     prefix: string,
     showPoints = true
   ) => {
-    const grouped = details.reduce<Array<{ target: string; items: typeof details; firstIndex: number }>>((acc, detail, index) => {
+    const visibleDetails = getVisibleImpactDetails(details);
+    const grouped = visibleDetails.reduce<Array<{ target: string; items: typeof visibleDetails; firstIndex: number }>>((acc, detail, index) => {
       const existing = acc.find((group) => group.target === detail.target);
       if (existing) {
         existing.items.push(detail);
@@ -1365,8 +1385,9 @@ export function TuViBoard({ chart }: Props) {
     ));
   };
 
-  const summarizeYearImpacts = (details: ImpactDetail[]) => {
-    const grouped = details.reduce<Array<{ target: string; point: number; firstIndex: number }>>((acc, detail, index) => {
+  const summarizeYearImpacts = useCallback((details: ImpactDetail[]) => {
+    const visibleDetails = getVisibleImpactDetails(details);
+    const grouped = visibleDetails.reduce<Array<{ target: string; point: number; firstIndex: number }>>((acc, detail, index) => {
       const existing = acc.find((item) => item.target === detail.target);
       if (existing) {
         existing.point += detail.point;
@@ -1391,7 +1412,7 @@ export function TuViBoard({ chart }: Props) {
         positive: item.point > 0,
         neutral: item.point === 0,
       }));
-  };
+  }, [getVisibleImpactDetails]);
 
   const quaiAnalysis = useMemo(() => {
     if (
@@ -1518,6 +1539,7 @@ export function TuViBoard({ chart }: Props) {
     quaiDaiVanExtendedLocKy,
     quaiNamLocKy,
     quaiNamExtendedLocKy,
+    summarizeYearImpacts,
   ]);
 
   const quaiYearRanking = useMemo(() => {
@@ -1737,7 +1759,15 @@ export function TuViBoard({ chart }: Props) {
     prefixLoc: string,
     prefixKy: string,
     kyWarnings: Set<string> = new Set()
-  ) => (
+  ) => {
+    const locItems = locKy.loc
+      .map((idx, i) => ({ idx, level: i + 1, target: labelResolver(idx) }))
+      .filter((item) => !hideMenhImpacts || !item.target.startsWith('Mệnh'));
+    const kyItems = locKy.ky
+      .map((idx, i) => ({ idx, level: i + 1, target: labelResolver(idx), label: `${prefixKy}${i + 1}` }))
+      .filter((item) => !hideMenhImpacts || !item.target.startsWith('Mệnh'));
+
+    return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <h4 className="text-sm font-bold text-slate-900 md:text-base font-serif">{title}</h4>
       <p className="mt-1 text-xs leading-relaxed text-gray-600 md:text-sm">{description}</p>
@@ -1745,12 +1775,12 @@ export function TuViBoard({ chart }: Props) {
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Lộc</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {locKy.loc.map((idx, i) => (
+            {locItems.map((item) => (
               <span
-                key={`${prefixLoc}-${i}`}
+                key={`${prefixLoc}-${item.level}`}
                 className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 ring-1 ring-blue-200"
               >
-                {prefixLoc}{i + 1} {labelResolver(idx)}
+                {prefixLoc}{item.level} {item.target}
               </span>
             ))}
           </div>
@@ -1758,23 +1788,21 @@ export function TuViBoard({ chart }: Props) {
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-red-700">Kỵ</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {locKy.ky.map((idx, i) => {
-              const label = `${prefixKy}${i + 1}`;
-              return (
+            {kyItems.map((item) => (
                 <span
-                  key={`${prefixKy}-${i}`}
+                  key={`${prefixKy}-${item.level}`}
                   className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-800 ring-1 ring-red-200"
                 >
-                  {label} {labelResolver(idx)}
-                  {kyWarnings.has(label) && <span className="ml-1 text-[10px] font-bold text-red-600">(hãm)</span>}
+                  {item.label} {item.target}
+                  {kyWarnings.has(item.label) && <span className="ml-1 text-[10px] font-bold text-red-600">(hãm)</span>}
                 </span>
-              );
-            })}
+            ))}
           </div>
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const quaiBadKy = useMemo(() => {
     if (!isQuaiMode || selectedCungIndex === null || !quaiLocKy || !quaiInfo) return null;
@@ -2117,6 +2145,20 @@ export function TuViBoard({ chart }: Props) {
                     Bỏ chọn Lộc/Kỵ
                   </button>
                 )}
+                {selectedCungIndex !== null && (
+                  <button
+                    type="button"
+                    aria-pressed={hideMenhImpacts}
+                    onClick={() => setHideMenhImpacts((value) => !value)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                      hideMenhImpacts
+                        ? 'bg-slate-800 text-white hover:bg-slate-900'
+                        : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
+                    }`}
+                  >
+                    {hideMenhImpacts ? 'Hiện tác động của Mệnh' : 'Ẩn tác động của Mệnh'}
+                  </button>
+                )}
                 {viewMode === 'daiVan' && (selectedDaiVan !== null || currentDaiVan !== null) && selectedCungIndex !== null && (
                   <button
                     type="button"
@@ -2433,7 +2475,7 @@ export function TuViBoard({ chart }: Props) {
 
       {/* 12-palace board - Tứ Hóa Phái layout */}
       <div className="feng-board mx-auto mt-6 max-w-5xl rounded-[1.6rem] p-3 md:p-5">
-      <div className="relative z-10 mb-3 md:hidden">
+      <div className="hidden">
         <div className="mb-3 rounded-2xl border border-amber-200/70 bg-white/90 p-3 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -2464,7 +2506,7 @@ export function TuViBoard({ chart }: Props) {
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto hidden max-w-4xl grid-cols-4 gap-2 md:grid md:gap-3">
+      <div className="relative z-10 mx-auto grid max-w-4xl grid-cols-4 gap-2 md:gap-3">
         {/* Row 1: Tỵ -> Thân */}
         {renderBoardPalace(5)}
         {renderBoardPalace(6)}
