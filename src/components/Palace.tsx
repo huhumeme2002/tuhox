@@ -25,6 +25,13 @@ interface Props {
   onSelect?: () => void;
 }
 
+const BADGE_TU_HOA_CLASS: Record<string, string> = {
+  'Hóa Lộc': 'bg-emerald-500/16 text-emerald-200 ring-1 ring-emerald-400/35',
+  'Hóa Quyền': 'bg-sky-500/16 text-sky-200 ring-1 ring-sky-400/35',
+  'Hóa Khoa': 'bg-violet-500/16 text-violet-200 ring-1 ring-violet-400/35',
+  'Hóa Kỵ': 'bg-red-500/16 text-red-200 ring-1 ring-red-400/35',
+};
+
 export function Palace({
   palace,
   daiVanCungIndex,
@@ -70,31 +77,31 @@ export function Palace({
   const daiVanKy = affectedDaiVan?.ky.some((x) => x.daiVan === daiVan);
 
   const borderClass = isDaiVanMenh
-    ? 'border-amber-500 bg-amber-50/92 ring-2 ring-amber-300/70 shadow-amber-200/50'
+    ? 'border-[rgba(243,210,122,0.7)] bg-[rgba(60,45,12,0.28)] ring-2 ring-[rgba(243,210,122,0.34)] shadow-[0_0_28px_rgba(212,175,55,0.22)]'
     : isMenh && isThan
-    ? 'border-purple-500 bg-purple-50/92 ring-2 ring-purple-300/70 shadow-purple-200/50'
-    : isActiveMenh
-    ? 'border-rose-500 bg-rose-50/92 ring-2 ring-rose-300/70 shadow-rose-200/50'
-    : isMenh
-    ? 'border-red-500 bg-red-50/92'
-    : isThan
-    ? 'border-blue-500 bg-blue-50/92'
-    : 'border-amber-900/25 bg-amber-50/72';
+      ? 'border-[rgba(168,85,247,0.78)] bg-[rgba(76,29,149,0.18)] ring-2 ring-[rgba(168,85,247,0.28)] shadow-[0_0_26px_rgba(168,85,247,0.18)]'
+      : isActiveMenh
+        ? 'border-[rgba(244,114,182,0.72)] bg-[rgba(127,29,29,0.16)] ring-2 ring-[rgba(244,114,182,0.24)] shadow-[0_0_24px_rgba(244,114,182,0.18)]'
+        : isMenh
+          ? 'border-[rgba(248,113,113,0.56)] bg-[rgba(127,29,29,0.14)]'
+          : isThan
+            ? 'border-[rgba(45,212,191,0.54)] bg-[rgba(8,47,73,0.14)]'
+            : 'border-[rgba(243,210,122,0.2)] bg-[rgba(15,23,42,0.74)]';
 
   const nameColor = isDaiVanMenh
-    ? 'text-amber-800 font-serif'
+    ? 'text-[var(--gold-soft)] font-serif'
     : isMenh && isThan
-    ? 'text-purple-800 font-serif'
-    : isActiveMenh
-    ? 'text-rose-800 font-serif'
-    : isMenh
-    ? 'text-red-800 font-serif'
-    : isThan
-    ? 'text-blue-800 font-serif'
-    : 'text-amber-950 font-serif';
+      ? 'text-violet-300 font-serif'
+      : isActiveMenh
+        ? 'text-rose-300 font-serif'
+        : isMenh
+          ? 'text-red-300 font-serif'
+          : isThan
+            ? 'text-teal-300 font-serif'
+            : 'text-[var(--text-main)] font-serif';
 
   const selectedClass = isSelected
-    ? 'border-amber-500 ring-4 ring-amber-300/65 shadow-2xl shadow-amber-200/60'
+    ? 'border-[rgba(243,210,122,0.72)] ring-4 ring-[rgba(139,92,246,0.28)] shadow-[0_0_34px_rgba(212,175,55,0.22)] scale-[1.02]'
     : '';
 
   return (
@@ -102,18 +109,17 @@ export function Palace({
       type="button"
       aria-pressed={isSelected}
       onClick={onSelect}
-      className={`palace-card relative flex min-h-[168px] flex-col rounded-[1rem] border-2 p-2 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-500/80 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-amber-400 sm:min-h-[188px] md:min-h-[228px] md:p-3 ${borderClass} ${selectedClass}`}
+      className={`palace-card relative flex min-h-[168px] flex-col rounded-[1rem] border p-2 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-[rgba(243,210,122,0.56)] hover:shadow-[0_20px_42px_rgba(2,6,23,0.42)] focus:outline-none focus:ring-2 focus:ring-[rgba(243,210,122,0.4)] sm:min-h-[188px] md:min-h-[228px] md:p-3 ${borderClass} ${selectedClass}`}
     >
-      {/* Đại vận ở góc phải trên */}
       {daiVan !== undefined && (
         <div className="absolute right-1.5 top-1.5 z-10">
           <span
-            className={`text-xs md:text-sm font-bold px-2 py-0.5 rounded-lg shadow-sm ${
+            className={`rounded-lg px-2 py-0.5 text-xs font-bold shadow-sm md:text-sm ${
               daiVanLoc
-                ? 'text-white bg-blue-500 ring-1 ring-blue-300'
+                ? 'bg-emerald-500/18 text-emerald-100 ring-1 ring-emerald-400/35'
                 : daiVanKy
-                ? 'text-white bg-gray-800 ring-1 ring-gray-500'
-                : 'text-amber-900 bg-gradient-to-br from-amber-200 to-amber-300 ring-1 ring-amber-400/50'
+                  ? 'bg-red-500/18 text-red-100 ring-1 ring-red-400/35'
+                  : 'bg-[rgba(212,175,55,0.18)] text-[var(--gold-soft)] ring-1 ring-[rgba(243,210,122,0.26)]'
             }`}
           >
             {daiVan}
@@ -121,53 +127,50 @@ export function Palace({
         </div>
       )}
 
-      {/* Header: tên cung + can chi */}
-      <div className="relative z-10 mb-2 flex items-start justify-end border-b border-amber-300/60 pb-1">
+      <div className="relative z-10 mb-2 flex items-start justify-end border-b border-[rgba(243,210,122,0.16)] pb-1">
         <div className="pr-7 text-right leading-tight">
           {yearRoleName ? (
-            <div className={`font-bold text-xs md:text-sm ${nameColor}`}>{yearRoleName}</div>
+            <div className={`text-xs font-bold md:text-sm ${nameColor}`}>{yearRoleName}</div>
           ) : daiVanName ? (
-            <div className={`font-bold text-xs md:text-sm ${nameColor}`}>{daiVanName} Vận</div>
+            <div className={`text-xs font-bold md:text-sm ${nameColor}`}>{daiVanName} Vận</div>
           ) : (
-            <div className={`font-bold text-xs md:text-sm ${nameColor}`}>{name}</div>
+            <div className={`text-xs font-bold md:text-sm ${nameColor}`}>{name}</div>
           )}
-          <div className="text-[10px] md:text-xs text-gray-700 font-medium tracking-wide">
+          <div className="text-[10px] font-medium tracking-wide text-[var(--text-muted)] md:text-xs">
             {displayCan} {chi}
           </div>
         </div>
       </div>
 
-      {/* Badge Mệnh Đại Vận / Mệnh năm */}
       {isDaiVanMenh && (
         <div className="absolute left-1.5 top-1.5 z-10">
-          <span className="text-[9px] md:text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 px-2 py-0.5 rounded-md shadow-sm ring-1 ring-amber-400/50">
+          <span className="rounded-md bg-[linear-gradient(135deg,#f3d27a,#d4af37,#9f6f17)] px-2 py-0.5 text-[9px] font-bold text-[#221600] shadow-sm ring-1 ring-[rgba(243,210,122,0.34)] md:text-[10px]">
             Mệnh Vận
           </span>
         </div>
       )}
       {isActiveMenh && !isMenh && (
         <div className="absolute left-1.5 top-1.5 z-10">
-          <span className="text-[9px] md:text-[10px] font-bold text-white bg-gradient-to-r from-rose-500 to-rose-600 px-2 py-0.5 rounded-md shadow-sm ring-1 ring-rose-400/50">
+          <span className="rounded-md bg-[linear-gradient(135deg,#fb7185,#e11d48)] px-2 py-0.5 text-[9px] font-bold text-white shadow-sm ring-1 ring-rose-300/30 md:text-[10px]">
             {activeMenhLabel ?? 'Mệnh năm'}
           </span>
         </div>
       )}
 
-      {/* Chính tinh */}
       <div className="relative z-10 mb-2 space-y-1.5">
         {chinhTinh.map((star, idx) => (
           <div
             key={`chinh-${idx}`}
-            className="flex items-center gap-2 text-sm md:text-base font-bold leading-tight font-serif"
-            style={{ color: STAR_COLORS[star.name] || '#333' }}
+            className="flex items-center gap-2 font-serif text-sm font-bold leading-tight md:text-base"
+            style={{ color: STAR_COLORS[star.name] || '#F8EFD2' }}
           >
-            <span className="w-2 h-2 rounded-full bg-current opacity-80 flex-shrink-0 shadow-sm" />
+            <span className="h-2 w-2 flex-shrink-0 rounded-full bg-current opacity-90 shadow-sm" />
             <span>
               {star.quality === 1 ? '+' : star.quality === -1 ? '-' : ''}
               {star.name}
             </span>
             {star.tuHoa && (
-              <span className="ml-1 text-[10px] md:text-xs font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded-md ring-1 ring-red-200 shadow-sm">
+              <span className={`ml-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold md:text-xs ${BADGE_TU_HOA_CLASS[star.tuHoa] ?? 'bg-white/10 text-white ring-1 ring-white/10'}`}>
                 {star.tuHoa}
               </span>
             )}
@@ -175,12 +178,11 @@ export function Palace({
         ))}
       </div>
 
-      {/* Phụ tinh */}
       {phuTinh.length > 0 && (
-        <div className="relative z-10 mt-auto border-t border-dashed border-amber-300/60 pt-2">
+        <div className="relative z-10 mt-auto border-t border-dashed border-[rgba(243,210,122,0.12)] pt-2">
           <div className="flex flex-wrap gap-x-2.5 gap-y-1">
             {phuTinh.map((star, idx) => (
-              <span key={`phu-${idx}`} className="text-[11px] md:text-xs text-gray-600 leading-tight font-medium">
+              <span key={`phu-${idx}`} className="text-[11px] font-medium leading-tight text-[var(--text-muted)] md:text-xs">
                 {star.name}
               </span>
             ))}
@@ -188,14 +190,13 @@ export function Palace({
         </div>
       )}
 
-      {/* Tứ Hóa (nếu sao phụ hóa) */}
       {tuHoaList.length > 0 && (
-        <div className="relative z-10 mt-1.5 border-t border-dashed border-amber-300/50 pt-1.5">
+        <div className="relative z-10 mt-1.5 border-t border-dashed border-[rgba(243,210,122,0.1)] pt-1.5">
           <div className="flex flex-wrap gap-1">
             {tuHoaList.map((star, idx) => (
               <span
                 key={`tuhoa-${idx}`}
-                className="text-[10px] md:text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-md ring-1 ring-red-200 shadow-sm"
+                className={`rounded-md px-2 py-0.5 text-[10px] font-bold md:text-xs ${BADGE_TU_HOA_CLASS[star.tuHoa ?? ''] ?? 'bg-white/10 text-white ring-1 ring-white/10'}`}
               >
                 {star.tuHoa}
               </span>
@@ -204,25 +205,24 @@ export function Palace({
         </div>
       )}
 
-      {/* Lộc/Kỵ tiên thiên + Đại Vận badges */}
       <div className="absolute bottom-1.5 right-1.5 z-10 flex max-w-[80%] flex-wrap justify-end gap-1">
         {locLabel && (
-          <span className="text-[10px] md:text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-0.5 rounded-lg shadow-md ring-1 ring-blue-300">
+          <span className="rounded-lg bg-emerald-500/18 px-2 py-0.5 text-[10px] font-bold text-emerald-100 shadow-md ring-1 ring-emerald-400/35 md:text-xs">
             {locLabel}
           </span>
         )}
         {kyLabel && (
-          <span className="text-[10px] md:text-xs font-bold text-white bg-gradient-to-r from-gray-700 to-gray-800 px-2 py-0.5 rounded-lg shadow-md ring-1 ring-gray-500">
+          <span className="rounded-lg bg-red-500/18 px-2 py-0.5 text-[10px] font-bold text-red-100 shadow-md ring-1 ring-red-400/35 md:text-xs">
             {kyLabel}
           </span>
         )}
         {daiVanLocLabel && (
-          <span className="text-[10px] md:text-xs font-bold text-white bg-gradient-to-r from-sky-400 to-sky-500 px-2 py-0.5 rounded-lg shadow-md ring-1 ring-sky-300">
+          <span className="rounded-lg bg-sky-500/18 px-2 py-0.5 text-[10px] font-bold text-sky-100 shadow-md ring-1 ring-sky-400/35 md:text-xs">
             {daiVanLocLabel}
           </span>
         )}
         {daiVanKyLabel && (
-          <span className="text-[10px] md:text-xs font-bold text-white bg-gradient-to-r from-stone-500 to-stone-600 px-2 py-0.5 rounded-lg shadow-md ring-1 ring-stone-400">
+          <span className="rounded-lg bg-violet-500/18 px-2 py-0.5 text-[10px] font-bold text-violet-100 shadow-md ring-1 ring-violet-400/35 md:text-xs">
             {daiVanKyLabel}
           </span>
         )}

@@ -322,10 +322,10 @@ export function TuViBoard({ chart }: Props) {
   // Vai trò chung của cung đang click (ưu tiên năm, sau đó Đại Vận, cuối cùng gốc)
   const clickRoleIndex = useMemo(() => {
     if (selectedCungIndex === null) return null;
-    if (selectedYear !== null) return (selectedCungIndex - activeMenhIndex + 12) % 12;
-    if (activeDaiVanCungIndex !== null) return (selectedCungIndex - activeDaiVanCungIndex + 12) % 12;
+    if (viewMode === 'nam' && selectedYear !== null) return (selectedCungIndex - activeMenhIndex + 12) % 12;
+    if (viewMode === 'daiVan' && activeDaiVanCungIndex !== null) return (selectedCungIndex - activeDaiVanCungIndex + 12) % 12;
     return (selectedCungIndex - gocMenhIndex + 12) % 12;
-  }, [selectedCungIndex, selectedYear, activeMenhIndex, activeDaiVanCungIndex, gocMenhIndex]);
+  }, [selectedCungIndex, viewMode, selectedYear, activeMenhIndex, activeDaiVanCungIndex, gocMenhIndex]);
 
   // Cung đóng vai trò chung trong từng tầng
   const gocRoleCungIndex = useMemo(() => {
@@ -1316,11 +1316,11 @@ export function TuViBoard({ chart }: Props) {
 
   const getLevelLabel = (level: string) => {
     switch (level) {
-      case 'very-good': return { text: 'Rất đẹp', color: 'text-emerald-700 bg-emerald-100 ring-emerald-300' };
-      case 'good': return { text: 'Đẹp', color: 'text-blue-700 bg-blue-100 ring-blue-300' };
-      case 'neutral': return { text: 'Bình thường', color: 'text-gray-700 bg-gray-100 ring-gray-300' };
-      case 'bad': return { text: 'Xấu', color: 'text-orange-700 bg-orange-100 ring-orange-300' };
-      case 'very-bad': return { text: 'Rất xấu', color: 'text-red-700 bg-red-100 ring-red-300' };
+      case 'very-good': return { text: 'Rất đẹp', color: 'text-emerald-100 bg-emerald-500/15 ring-emerald-400/30' };
+      case 'good': return { text: 'Đẹp', color: 'text-sky-100 bg-sky-500/15 ring-sky-400/30' };
+      case 'neutral': return { text: 'Bình thường', color: 'text-slate-100 bg-slate-500/15 ring-slate-300/30' };
+      case 'bad': return { text: 'Xấu', color: 'text-amber-100 bg-amber-500/15 ring-amber-400/30' };
+      case 'very-bad': return { text: 'Rất xấu', color: 'text-red-100 bg-red-500/15 ring-red-400/30' };
       default: return { text: '', color: '' };
     }
   };
@@ -1841,7 +1841,6 @@ export function TuViBoard({ chart }: Props) {
   const displayYearCanMap = isQuaiMode ? quaiInfo?.canMap ?? null : yearInfo?.yearCanMap ?? null;
   const displayRoleNameOnBoard = isQuaiMode ? getQuaiRoleName : getYearRoleName;
   const badKyLabels = new Set(((isQuaiMode ? quaiBadKy : badKy) ?? []).map((item) => item.label));
-  const boardPalaceOrder = [5, 6, 7, 8, 4, 9, 3, 10, 2, 1, 0, 11] as const;
   const renderBoardPalace = (index: number) => (
     <PalaceComponent
       palace={getPalace(index)}
@@ -1860,43 +1859,43 @@ export function TuViBoard({ chart }: Props) {
 
   const boardCenterCard = (
     <div className="feng-medallion flex flex-col items-center justify-center rounded-[1.35rem] p-3 text-center md:p-4">
-      <span className="feng-kicker !bg-amber-900/6 !text-amber-900 !shadow-none">Trung tâm lá số</span>
-      <h3 className="mt-3 font-serif text-base font-bold text-amber-950 md:text-lg">Tứ Hóa Phái</h3>
-      <p className="mt-1 font-serif text-sm font-semibold text-slate-800 md:text-base">{chart.name || 'Vô danh'}</p>
-      <p className="text-[10px] md:text-xs text-slate-600">{chart.canChi.year} · {chart.amDuong}</p>
-      <div className="mt-3 space-y-1 text-xs md:text-sm">
-        <p><span className="font-semibold text-red-700">{chart.menhCung.label}:</span> {chart.menhCung.chi}</p>
-        <p><span className="font-semibold text-blue-700">{chart.thanCung.label}:</span> {chart.thanCung.chi}</p>
-        <p className="font-serif text-base font-bold text-amber-900 md:text-lg">{chart.menhCuc}</p>
+      <span className="feng-kicker !bg-[rgba(11,16,32,0.48)] !text-[var(--gold-soft)] !shadow-none">Trung tâm lá số</span>
+      <h3 className="mt-3 font-serif text-base font-bold text-[var(--text-main)] md:text-lg">Tứ Hóa Phái</h3>
+      <p className="mt-1 font-serif text-sm font-semibold text-[var(--text-main)] md:text-base">{chart.name || 'Vô danh'}</p>
+      <p className="text-[10px] text-[var(--text-muted)] md:text-xs">{chart.canChi.year} · {chart.amDuong}</p>
+      <div className="mt-3 space-y-1 text-xs text-[var(--text-muted)] md:text-sm">
+        <p><span className="font-semibold text-rose-300">{chart.menhCung.label}:</span> {chart.menhCung.chi}</p>
+        <p><span className="font-semibold text-teal-300">{chart.thanCung.label}:</span> {chart.thanCung.chi}</p>
+        <p className="font-serif text-base font-bold text-[var(--gold-soft)] md:text-lg">{chart.menhCuc}</p>
       </div>
       {!isQuaiMode && selectedDaiVan !== null && (
-        <p className="mt-3 rounded-full bg-amber-100/80 px-3 py-1 text-xs font-semibold text-amber-900 ring-1 ring-amber-200 md:text-sm">
+        <p className="imperial-chip imperial-chip-accent mt-3 rounded-full px-3 py-1 text-xs font-semibold md:text-sm">
           Đang xem Đại Vận {selectedDaiVan}
         </p>
       )}
       {!isQuaiMode && yearInfo && (
-        <p className="mt-2 rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-800 ring-1 ring-rose-200 md:text-sm">
+        <p className="imperial-chip imperial-chip-bad mt-2 rounded-full px-3 py-1 text-xs font-semibold md:text-sm">
           Đang xem năm {selectedYear}: Mệnh năm {palaces[yearInfo.chiIndex].name}
         </p>
       )}
       {isQuaiMode && quaiInfo && (
         <>
-          <p className="mt-3 rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-800 ring-1 ring-rose-200 md:text-sm">
+          <p className="imperial-chip imperial-chip-bad mt-3 rounded-full px-3 py-1 text-xs font-semibold md:text-sm">
             Mệnh quái tại {palaces[quaiInfo.chiIndex].chi} · {getQuaiDisplayName(quaiInfo.chiIndex)}
           </p>
-          <p className="mt-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 md:text-sm">
+          <p className="imperial-chip mt-2 rounded-full px-3 py-1 text-xs font-semibold md:text-sm">
             Người B: {quaiBirthYear} ({quaiInfo.can} {quaiInfo.chi})
           </p>
         </>
       )}
-      <p className="mt-2 text-[10px] md:text-xs text-slate-500">
-        {selectedCungIndex !== null ? 'Cung đang xem sẽ được viền đậm trên lá số.' : 'Chạm một cung để mở phần phân tích bên dưới.'}
+      <p className="mt-2 text-[10px] text-[var(--text-muted)]/80 md:text-xs">
+        {selectedCungIndex !== null ? 'Cung đang xem sẽ được viền sáng trên bàn đồ.' : 'Chạm một cung để mở phần phân tích bên dưới.'}
       </p>
     </div>
   );
 
   return (
-    <div className="feng-shell mt-6 rounded-[1.35rem] p-3 md:p-5">
+    <div className="imperial-ui feng-shell mt-6 rounded-[1.35rem] p-3 md:p-5">
       {/* Header info */}
       <div className="mb-5 space-y-4">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
@@ -1904,41 +1903,41 @@ export function TuViBoard({ chart }: Props) {
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-2">
                 <div>
-                  <h2 className="text-xl md:text-2xl font-bold text-amber-900 font-serif">Lá số Tử Vi</h2>
-                  <p className="mt-1 text-sm text-gray-700">
+                  <h2 className="font-serif text-xl font-bold text-[var(--text-main)] md:text-2xl">Lá số Tử Vi</h2>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">
                     <span className="font-semibold">{chart.name || 'Vô danh'}</span>
-                    <span className="mx-1.5 text-gray-400">•</span>
+                    <span className="mx-1.5 text-[var(--text-muted)]/50">•</span>
                     Dương: {chart.birthDate.split('-').reverse().join('/')}
-                    <span className="mx-1.5 text-gray-400">•</span>
+                    <span className="mx-1.5 text-[var(--text-muted)]/50">•</span>
                     Âm: {chart.lunarDate.day}/{chart.lunarDate.month}/{chart.lunarDate.year}
                     {chart.lunarDate.leap ? ' (nhuận)' : ''}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 text-xs md:text-sm">
-                  <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-900 ring-1 ring-amber-200">Năm: {chart.canChi.year}</span>
-                  <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-900 ring-1 ring-amber-200">Tháng: {chart.canChi.month}</span>
-                  <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-900 ring-1 ring-amber-200">Ngày: {chart.canChi.day}</span>
-                  <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-900 ring-1 ring-amber-200">Giờ: {chart.canChi.hour}</span>
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-900 ring-1 ring-emerald-200">Tuổi âm hiện tại: {currentAmAge}</span>
+                  <span className="imperial-chip imperial-chip-accent rounded-full px-3 py-1 font-medium">Năm: {chart.canChi.year}</span>
+                  <span className="imperial-chip rounded-full px-3 py-1 font-medium">Tháng: {chart.canChi.month}</span>
+                  <span className="imperial-chip rounded-full px-3 py-1 font-medium">Ngày: {chart.canChi.day}</span>
+                  <span className="imperial-chip rounded-full px-3 py-1 font-medium">Giờ: {chart.canChi.hour}</span>
+                  <span className="imperial-chip imperial-chip-good rounded-full px-3 py-1 font-medium">Tuổi âm hiện tại: {currentAmAge}</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2 sm:min-w-[280px]">
-                <div className="rounded-xl border border-red-200 bg-white/90 p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-red-700">Mệnh</p>
-                  <p className="mt-1 text-sm font-bold text-red-900">{chart.menhCung.position}</p>
+                <div className="imperial-stat rounded-xl p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-300">Mệnh</p>
+                  <p className="mt-1 text-sm font-bold text-[var(--text-main)]">{chart.menhCung.position}</p>
                 </div>
-                <div className="rounded-xl border border-blue-200 bg-white/90 p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700">Thân</p>
-                  <p className="mt-1 text-sm font-bold text-blue-900">{chart.thanCung.position}</p>
+                <div className="imperial-stat rounded-xl p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-teal-300">Thân</p>
+                  <p className="mt-1 text-sm font-bold text-[var(--text-main)]">{chart.thanCung.position}</p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-white/90 p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Âm Dương</p>
-                  <p className="mt-1 text-sm font-bold text-slate-900">{chart.amDuong}</p>
+                <div className="imperial-stat rounded-xl p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">Âm Dương</p>
+                  <p className="mt-1 text-sm font-bold text-[var(--text-main)]">{chart.amDuong}</p>
                 </div>
-                <div className="rounded-xl border border-amber-200 bg-white/90 p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Mệnh Cục</p>
-                  <p className="mt-1 text-sm font-bold text-amber-900">{chart.menhCuc}</p>
+                <div className="imperial-stat rounded-xl p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gold-soft)]">Mệnh Cục</p>
+                  <p className="mt-1 text-sm font-bold text-[var(--text-main)]">{chart.menhCuc}</p>
                 </div>
               </div>
             </div>
@@ -1947,18 +1946,18 @@ export function TuViBoard({ chart }: Props) {
           <section className="feng-panel rounded-[1.35rem] p-4 md:p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Điều khiển</p>
-                <h3 className="mt-1 text-base font-bold text-slate-900 font-serif">Chế độ xem và bộ lọc</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Điều khiển</p>
+                <h3 className="mt-1 text-base font-bold text-[var(--text-main)] font-serif">Chế độ xem và bộ lọc</h3>
               </div>
-              <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200">
+              <span className="imperial-chip rounded-full px-2.5 py-1 text-[11px] font-medium">
                 Đang xem: {activeLayerLabel}
               </span>
             </div>
 
             <div className="mt-4 space-y-4">
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Lớp phân tích</p>
-                <div className="inline-flex rounded-2xl border border-amber-200 bg-white/90 p-1 shadow-sm">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Lớp phân tích</p>
+                <div className="imperial-segmented">
                   {([
                     { key: 'tienThien', label: 'Tiên thiên' },
                     { key: 'daiVan', label: 'Đại Vận' },
@@ -1969,10 +1968,10 @@ export function TuViBoard({ chart }: Props) {
                       key={m.key}
                       type="button"
                       onClick={() => switchViewMode(m.key)}
-                      className={`rounded-xl px-4 py-2 text-xs font-bold transition-all md:text-sm ${
+                      className={`imperial-tab rounded-xl px-4 py-2 text-xs font-bold transition-all md:text-sm ${
                         viewMode === m.key
-                          ? 'bg-amber-600 text-white shadow-sm'
-                          : 'text-amber-900 hover:bg-amber-50'
+                          ? 'imperial-tab-active'
+                          : ''
                       }`}
                     >
                       {m.label}
@@ -1984,11 +1983,11 @@ export function TuViBoard({ chart }: Props) {
               <div className="grid gap-3 sm:grid-cols-2">
                 {viewMode === 'daiVan' && (
                   <label className="block">
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Đại Vận</span>
+                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Đại Vận</span>
                     <select
                       value={selectedDaiVan ?? ''}
                       onChange={(e) => setSelectedDaiVan(e.target.value ? Number(e.target.value) : null)}
-                      className="feng-input w-full rounded-xl px-3 py-2 text-sm text-slate-900"
+                      className="feng-input w-full rounded-xl px-3 py-2 text-sm"
                     >
                       {daiVanOptions.map((dv) => (
                         <option key={`dv-${dv}`} value={dv}>
@@ -2002,7 +2001,7 @@ export function TuViBoard({ chart }: Props) {
                 {viewMode === 'nam' && (
                   <>
                     <label className="block">
-                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Năm xem</span>
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Năm xem</span>
                       <input
                         type="number"
                         placeholder="Nhập năm"
@@ -2011,11 +2010,11 @@ export function TuViBoard({ chart }: Props) {
                           const val = e.target.value;
                           setSelectedYear(val ? Number(val) : null);
                         }}
-                        className="feng-input w-full rounded-xl px-3 py-2 text-sm text-slate-900"
+                        className="feng-input w-full rounded-xl px-3 py-2 text-sm"
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Tuổi âm</span>
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Tuổi âm</span>
                       <input
                         type="number"
                         placeholder="Tùy chọn"
@@ -2024,7 +2023,7 @@ export function TuViBoard({ chart }: Props) {
                           const val = e.target.value;
                           setCurrentAge(val ? Number(val) : null);
                         }}
-                        className="feng-input w-full rounded-xl px-3 py-2 text-sm text-slate-900"
+                        className="feng-input w-full rounded-xl px-3 py-2 text-sm"
                       />
                     </label>
                   </>
@@ -2033,7 +2032,7 @@ export function TuViBoard({ chart }: Props) {
                 {viewMode === 'quai' && (
                   <>
                     <label className="block">
-                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Năm sinh người B</span>
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Năm sinh người B</span>
                       <input
                         type="number"
                         placeholder="Ví dụ 2005"
@@ -2043,15 +2042,15 @@ export function TuViBoard({ chart }: Props) {
                           setQuaiBirthYear(val ? Number(val) : null);
                           setSelectedCungIndex(null);
                         }}
-                        className="feng-input w-full rounded-xl px-3 py-2 text-sm text-slate-900"
+                        className="feng-input w-full rounded-xl px-3 py-2 text-sm"
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Đại Vận của A</span>
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Đại Vận của A</span>
                       <select
                         value={quaiSelectedDaiVan ?? ''}
                         onChange={(e) => setQuaiSelectedDaiVan(e.target.value ? Number(e.target.value) : null)}
-                        className="feng-input w-full rounded-xl px-3 py-2 text-sm text-slate-900"
+                        className="feng-input w-full rounded-xl px-3 py-2 text-sm"
                       >
                         <option value="">Không chọn</option>
                         {daiVanOptions.map((dv) => (
@@ -2062,7 +2061,7 @@ export function TuViBoard({ chart }: Props) {
                       </select>
                     </label>
                     <label className="block">
-                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Năm của A</span>
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Năm của A</span>
                       <input
                         type="number"
                         placeholder="Ví dụ 2027"
@@ -2071,7 +2070,7 @@ export function TuViBoard({ chart }: Props) {
                           const val = e.target.value;
                           setQuaiSelectedYear(val ? Number(val) : null);
                         }}
-                        className="feng-input w-full rounded-xl px-3 py-2 text-sm text-slate-900"
+                        className="feng-input w-full rounded-xl px-3 py-2 text-sm"
                       />
                     </label>
                   </>
@@ -2083,7 +2082,7 @@ export function TuViBoard({ chart }: Props) {
                   <button
                     type="button"
                     onClick={() => setSelectedYear(null)}
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                    className="imperial-button-secondary rounded-full px-3 py-1.5 text-xs font-medium transition"
                   >
                     Bỏ năm đang chọn
                   </button>
@@ -2092,7 +2091,7 @@ export function TuViBoard({ chart }: Props) {
                   <button
                     type="button"
                     onClick={() => setCurrentAge(null)}
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                    className="imperial-button-secondary rounded-full px-3 py-1.5 text-xs font-medium transition"
                   >
                     Bỏ tuổi âm
                   </button>
@@ -2104,7 +2103,7 @@ export function TuViBoard({ chart }: Props) {
                       setQuaiBirthYear(null);
                       setSelectedCungIndex(null);
                     }}
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                    className="imperial-button-secondary rounded-full px-3 py-1.5 text-xs font-medium transition"
                   >
                     Xóa năm người B
                   </button>
@@ -2113,7 +2112,7 @@ export function TuViBoard({ chart }: Props) {
                   <button
                     type="button"
                     onClick={() => setQuaiSelectedYear(null)}
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                    className="imperial-button-secondary rounded-full px-3 py-1.5 text-xs font-medium transition"
                   >
                     Bỏ năm của A
                   </button>
@@ -2122,7 +2121,7 @@ export function TuViBoard({ chart }: Props) {
                   <button
                     type="button"
                     onClick={() => setQuaiSelectedDaiVan(currentDaiVan)}
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                    className="imperial-button-secondary rounded-full px-3 py-1.5 text-xs font-medium transition"
                   >
                     Dùng Đại Vận hiện tại
                   </button>
@@ -2131,7 +2130,7 @@ export function TuViBoard({ chart }: Props) {
                   <button
                     type="button"
                     onClick={() => setQuaiSelectedDaiVan(null)}
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                    className="imperial-button-secondary rounded-full px-3 py-1.5 text-xs font-medium transition"
                   >
                     Bỏ Đại Vận A
                   </button>
@@ -2140,7 +2139,7 @@ export function TuViBoard({ chart }: Props) {
                   <button
                     type="button"
                     onClick={() => setSelectedCungIndex(null)}
-                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                    className="imperial-button-secondary rounded-full px-3 py-1.5 text-xs font-medium transition"
                   >
                     Bỏ chọn Lộc/Kỵ
                   </button>
@@ -2152,8 +2151,8 @@ export function TuViBoard({ chart }: Props) {
                     onClick={() => setHideMenhImpacts((value) => !value)}
                     className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                       hideMenhImpacts
-                        ? 'bg-slate-800 text-white hover:bg-slate-900'
-                        : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
+                        ? 'bg-[linear-gradient(135deg,#f3d27a,#d4af37,#9f6f17)] text-[#211500]'
+                        : 'imperial-button-secondary text-[var(--text-main)]'
                     }`}
                   >
                     {hideMenhImpacts ? 'Hiện tác động của Mệnh' : 'Ẩn tác động của Mệnh'}
@@ -2196,18 +2195,18 @@ export function TuViBoard({ chart }: Props) {
 
         {viewMode === 'nam' && yearInfo && (
           <div className="grid gap-3 md:grid-cols-3">
-            <div className="feng-panel rounded-xl p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Năm đang xem</p>
-              <p className="mt-1 text-sm font-bold text-amber-900">{selectedYear}: {yearInfo.can} {yearInfo.chi}</p>
+            <div className="imperial-stat rounded-xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gold-soft)]">Năm đang xem</p>
+              <p className="mt-1 text-sm font-bold text-[var(--text-main)]">{selectedYear}: {yearInfo.can} {yearInfo.chi}</p>
             </div>
-            <div className="feng-panel rounded-xl border-rose-200 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-700">Mệnh năm</p>
-              <p className="mt-1 text-sm font-bold text-rose-900">{palaces[yearInfo.chiIndex].name}</p>
+            <div className="imperial-stat rounded-xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-300">Mệnh năm</p>
+              <p className="mt-1 text-sm font-bold text-[var(--text-main)]">{palaces[yearInfo.chiIndex].name}</p>
             </div>
             {currentDaiVan !== null && (
-              <div className="feng-panel rounded-xl border-orange-200 p-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-orange-700">Đại Vận hiện tại</p>
-                <p className="mt-1 text-sm font-bold text-orange-900">
+              <div className="imperial-stat rounded-xl p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-300">Đại Vận hiện tại</p>
+                <p className="mt-1 text-sm font-bold text-[var(--text-main)]">
                   {currentDaiVan} tuổi ({palaces.find((p) => p.daiVan === currentDaiVan)?.name})
                 </p>
               </div>
@@ -2217,29 +2216,29 @@ export function TuViBoard({ chart }: Props) {
 
         {viewMode === 'quai' && (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="feng-panel rounded-xl p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Năm sinh người B</p>
-              <p className="mt-1 text-sm font-bold text-amber-900">
+            <div className="imperial-stat rounded-xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gold-soft)]">Năm sinh người B</p>
+              <p className="mt-1 text-sm font-bold text-[var(--text-main)]">
                 {quaiInfo ? `${quaiBirthYear}: ${quaiInfo.can} ${quaiInfo.chi}` : 'Chưa nhập'}
               </p>
             </div>
-            <div className="feng-panel rounded-xl border-rose-200 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-700">Mệnh quái</p>
-              <p className="mt-1 text-sm font-bold text-rose-900">
+            <div className="imperial-stat rounded-xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-300">Mệnh quái</p>
+              <p className="mt-1 text-sm font-bold text-[var(--text-main)]">
                 {quaiInfo ? `${getQuaiDisplayName(quaiInfo.chiIndex)} tại ${palaces[quaiInfo.chiIndex].chi}` : 'Chưa xác định'}
               </p>
             </div>
-            <div className="feng-panel rounded-xl border-orange-200 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-orange-700">Đại Vận của A</p>
-              <p className="mt-1 text-sm font-bold text-orange-900">
+            <div className="imperial-stat rounded-xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-300">Đại Vận của A</p>
+              <p className="mt-1 text-sm font-bold text-[var(--text-main)]">
                 {quaiSelectedDaiVan !== null && quaiSelectedDaiVanCungIndex !== null && quaiSelectedDaiVanCungIndex >= 0
                   ? `${quaiSelectedDaiVan} tuổi (${palaces[quaiSelectedDaiVanCungIndex].name})`
                   : 'Không chọn'}
               </p>
             </div>
-            <div className="feng-panel rounded-xl border-sky-200 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-sky-700">Năm của A</p>
-              <p className="mt-1 text-sm font-bold text-sky-900">
+            <div className="imperial-stat rounded-xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-sky-300">Năm của A</p>
+              <p className="mt-1 text-sm font-bold text-[var(--text-main)]">
                 {quaiYearInfo ? `${quaiSelectedYear}: ${quaiYearInfo.can} ${quaiYearInfo.chi}` : 'Không chọn'}
               </p>
             </div>
@@ -2247,265 +2246,41 @@ export function TuViBoard({ chart }: Props) {
         )}
 
         {selectedCungIndex !== null && selectedRoleName && (
-          <section className="feng-panel rounded-[1.2rem] border-sky-200 p-4">
+          <section className="feng-panel rounded-[1.2rem] p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-sky-700">Ngữ cảnh đang xem</p>
-                <h3 className="mt-1 text-base font-bold text-slate-900 font-serif">{selectedRoleName}</h3>
-                <p className="mt-1 text-sm text-slate-600">
-                  Phân tích theo lớp <span className="font-semibold text-slate-800">{activeLayerLabel}</span>
-                  {selectedRoleCan && <> · Can của cung: <span className="font-semibold text-slate-800">{selectedRoleCan}</span></>}
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Ngữ cảnh đang xem</p>
+                <h3 className="mt-1 text-base font-bold text-[var(--text-main)] font-serif">{selectedRoleName}</h3>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
+                  Phân tích theo lớp <span className="font-semibold text-[var(--text-main)]">{activeLayerLabel}</span>
+                  {selectedRoleCan && <> · Can của cung: <span className="font-semibold text-[var(--text-main)]">{selectedRoleCan}</span></>}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 text-xs">
                 {!isQuaiMode && selectedDaiVan !== null && (
-                  <span className="rounded-full bg-white px-3 py-1 font-medium text-amber-900 ring-1 ring-amber-200">Đại Vận {selectedDaiVan}</span>
+                  <span className="imperial-chip imperial-chip-accent rounded-full px-3 py-1 font-medium">Đại Vận {selectedDaiVan}</span>
                 )}
                 {!isQuaiMode && selectedYear !== null && yearInfo && (
-                  <span className="rounded-full bg-white px-3 py-1 font-medium text-rose-800 ring-1 ring-rose-200">Năm {selectedYear}: {yearInfo.can} {yearInfo.chi}</span>
+                  <span className="imperial-chip imperial-chip-bad rounded-full px-3 py-1 font-medium">Năm {selectedYear}: {yearInfo.can} {yearInfo.chi}</span>
                 )}
                 {isQuaiMode && quaiInfo && (
-                  <span className="rounded-full bg-white px-3 py-1 font-medium text-rose-800 ring-1 ring-rose-200">Người B: {quaiBirthYear} ({quaiInfo.can} {quaiInfo.chi})</span>
+                  <span className="imperial-chip imperial-chip-bad rounded-full px-3 py-1 font-medium">Người B: {quaiBirthYear} ({quaiInfo.can} {quaiInfo.chi})</span>
                 )}
                 {isQuaiMode && quaiSelectedDaiVan !== null && (
-                  <span className="rounded-full bg-white px-3 py-1 font-medium text-amber-900 ring-1 ring-amber-200">Đại Vận A: {quaiSelectedDaiVan}</span>
+                  <span className="imperial-chip imperial-chip-accent rounded-full px-3 py-1 font-medium">Đại Vận A: {quaiSelectedDaiVan}</span>
                 )}
                 {isQuaiMode && quaiSelectedYear !== null && quaiYearInfo && (
-                  <span className="rounded-full bg-white px-3 py-1 font-medium text-sky-800 ring-1 ring-sky-200">Năm A: {quaiSelectedYear} ({quaiYearInfo.can} {quaiYearInfo.chi})</span>
+                  <span className="imperial-chip rounded-full px-3 py-1 font-medium">Năm A: {quaiSelectedYear} ({quaiYearInfo.can} {quaiYearInfo.chi})</span>
                 )}
-                <span className="rounded-full bg-white px-3 py-1 font-medium text-sky-800 ring-1 ring-sky-200">Click cung để đổi trọng tâm phân tích</span>
+                <span className="imperial-chip rounded-full px-3 py-1 font-medium">Click cung để đổi trọng tâm phân tích</span>
               </div>
             </div>
           </section>
         )}
-
-        <div className="hidden">
-        <h2 className="text-xl md:text-2xl font-bold text-amber-900 font-serif">Lá số Tử Vi</h2>
-        <p className="text-sm text-gray-700">
-          <span className="font-semibold">{chart.name || 'Vô danh'}</span>
-          <span className="mx-1">·</span>
-          Dương: {chart.birthDate.split('-').reverse().join('/')}
-          <span className="mx-1">·</span>
-          Âm: {chart.lunarDate.day}/{chart.lunarDate.month}/{chart.lunarDate.year}
-          {chart.lunarDate.leap ? ' (nhuận)' : ''}
-        </p>
-        <div className="flex flex-wrap justify-center gap-1.5 text-xs">
-          <span className="px-2 py-1 bg-amber-100 text-amber-900 rounded-md font-medium">Năm: {chart.canChi.year}</span>
-          <span className="px-2 py-1 bg-amber-100 text-amber-900 rounded-md font-medium">Tháng: {chart.canChi.month}</span>
-          <span className="px-2 py-1 bg-amber-100 text-amber-900 rounded-md font-medium">Ngày: {chart.canChi.day}</span>
-          <span className="px-2 py-1 bg-amber-100 text-amber-900 rounded-md font-medium">Giờ: {chart.canChi.hour}</span>
-        </div>
-        <div className="flex flex-wrap justify-center gap-3 text-sm font-medium">
-          <span className="text-red-600">{chart.menhCung.position}</span>
-          <span className="text-blue-600">{chart.thanCung.position}</span>
-          <span className="text-gray-700">{chart.amDuong}</span>
-          <span className="text-amber-800 font-bold">{chart.menhCuc}</span>
-        </div>
-
-        {/* Controls */}
-        <div className="flex flex-col items-center gap-2 pt-1">
-          {/* Segmented control: Tiên thien | Đại Vận | Năm */}
-          <div className="inline-flex rounded-full border border-amber-300/80 overflow-hidden bg-amber-50/80 p-1 shadow-sm">
-            {([
-              { key: 'tienThien', label: 'Tiên thiên' },
-              { key: 'daiVan', label: 'Đại Vận' },
-              { key: 'nam', label: 'Năm' },
-            ] as { key: ViewMode; label: string }[]).map((m) => (
-              <button
-                key={m.key}
-                type="button"
-                onClick={() => {
-                  setViewMode(m.key);
-                  setSelectedCungIndex(null);
-                  setShowYearRanking(false);
-                  if (m.key === 'tienThien') {
-                    setSelectedDaiVan(null);
-                    setSelectedYear(null);
-                    setCurrentAge(null);
-                  } else if (m.key === 'daiVan') {
-                    setSelectedYear(null);
-                    setCurrentAge(null);
-                    setSelectedDaiVan(daiVanOptions[0] ?? null);
-                  } else {
-                    setSelectedDaiVan(null);
-                    setSelectedYear(getCurrentLunarYear());
-                    setCurrentAge(null);
-                  }
-                }}
-                className={`px-5 py-2 text-xs md:text-sm font-bold rounded-full transition-all duration-300 ${
-                  viewMode === m.key
-                    ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-md ring-1 ring-amber-400/50'
-                    : 'text-amber-900 hover:bg-amber-100/80 hover:text-amber-700'
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Control phụ theo mode */}
-          <div className="flex flex-wrap justify-center gap-2 items-center">
-            {viewMode === 'daiVan' && (
-              <select
-                value={selectedDaiVan ?? ''}
-                onChange={(e) => setSelectedDaiVan(e.target.value ? Number(e.target.value) : null)}
-                className="text-xs md:text-sm border border-amber-200 rounded-full px-4 py-2 bg-white/90 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all hover:border-amber-300 hover:shadow-sm"
-              >
-                {daiVanOptions.map((dv) => (
-                  <option key={`dv-${dv}`} value={dv}>
-                    Đại vận {dv}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            {viewMode === 'nam' && (
-              <>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    placeholder="Nhập năm xem"
-                    value={selectedYear ?? ''}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setSelectedYear(val ? Number(val) : null);
-                    }}
-                    className="text-xs md:text-sm border border-amber-200 rounded-full px-4 py-2 w-36 bg-white/90 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all hover:border-amber-300 hover:shadow-sm"
-                  />
-                  {selectedYear !== null && (
-                    <button
-                      onClick={() => setSelectedYear(null)}
-                      className="text-xs md:text-sm px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-all hover:shadow-sm"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    placeholder="Tuổi âm"
-                    value={currentAge ?? ''}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setCurrentAge(val ? Number(val) : null);
-                    }}
-                    className="text-xs md:text-sm border border-amber-200 rounded-full px-4 py-2 w-20 bg-white/90 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all hover:border-amber-300 hover:shadow-sm"
-                  />
-                  {currentAge !== null && (
-                    <button
-                      onClick={() => setCurrentAge(null)}
-                      className="text-xs md:text-sm px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-all hover:shadow-sm"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
-
-            {selectedCungIndex !== null && (
-              <button
-                onClick={() => setSelectedCungIndex(null)}
-                className="text-xs md:text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-all hover:shadow-sm"
-              >
-                Bỏ chọn Lộc/Kỵ
-              </button>
-            )}
-            {viewMode === 'daiVan' && (selectedDaiVan !== null || currentDaiVan !== null) && selectedCungIndex !== null && (
-              <button
-                onClick={() => setShowYearRanking((s) => !s)}
-                className={`text-xs md:text-sm px-4 py-2 rounded-full transition-all hover:shadow-sm font-semibold ${
-                  showYearRanking
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                }`}
-              >
-                {showYearRanking
-                  ? 'Ẩn năm đẹp/xấu'
-                  : `Năm đẹp/xấu cho ${getDaiVanRoleName?.(selectedCungIndex) ?? palaces[selectedCungIndex].name} Vận`}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {yearInfo && (
-          <div className="flex flex-wrap justify-center gap-2 text-xs">
-            <span className="px-2 py-1 bg-amber-100 text-amber-900 rounded-md font-medium">
-              Năm {selectedYear}: {yearInfo.can} {yearInfo.chi}
-            </span>
-            <span className="px-2 py-1 bg-red-100 text-red-900 rounded-md font-medium">
-              Mệnh năm tại {palaces[yearInfo.chiIndex].name}
-            </span>
-            {currentDaiVan !== null && (
-              <span className="px-2 py-1 bg-orange-100 text-orange-900 rounded-md font-medium">
-                Đại Vận hiện tại: {currentDaiVan} tuổi ({palaces.find((p) => p.daiVan === currentDaiVan)?.name})
-              </span>
-            )}
-          </div>
-        )}
-
-        {selectedCungIndex !== null && detailLocKy && (
-          <p className="text-xs text-gray-600">
-            Lộc/Kỵ {selectedYear !== null ? 'năm' : selectedDaiVan !== null ? 'Đại Vận' : 'tiên thiên'} của cung <span className="font-semibold">{getCungDisplayName(selectedCungIndex)}</span> ({getActiveCan(selectedCungIndex)}):
-            <span className="text-blue-600 ml-1">L1 {selectedDaiVan !== null ? `${getDaiVanRoleName?.(detailLocKy.loc[0]) ?? palaces[detailLocKy.loc[0]].name} Vận` : palaces[detailLocKy.loc[0]].name}</span>,
-            <span className="text-blue-500"> L2 {selectedDaiVan !== null ? `${getDaiVanRoleName?.(detailLocKy.loc[1]) ?? palaces[detailLocKy.loc[1]].name} Vận` : palaces[detailLocKy.loc[1]].name}</span>,
-            <span className="text-blue-400"> L3 {selectedDaiVan !== null ? `${getDaiVanRoleName?.(detailLocKy.loc[2]) ?? palaces[detailLocKy.loc[2]].name} Vận` : palaces[detailLocKy.loc[2]].name}</span>
-            <span className="text-gray-400 mx-1">·</span>
-            <span className="text-gray-800">K1 {selectedDaiVan !== null ? `${getDaiVanRoleName?.(detailLocKy.ky[0]) ?? palaces[detailLocKy.ky[0]].name} Vận` : palaces[detailLocKy.ky[0]].name}</span>,
-            <span className="text-gray-600"> K2 {selectedDaiVan !== null ? `${getDaiVanRoleName?.(detailLocKy.ky[1]) ?? palaces[detailLocKy.ky[1]].name} Vận` : palaces[detailLocKy.ky[1]].name}</span>,
-            <span className="text-gray-500"> K3 {selectedDaiVan !== null ? `${getDaiVanRoleName?.(detailLocKy.ky[2]) ?? palaces[detailLocKy.ky[2]].name} Vận` : palaces[detailLocKy.ky[2]].name}</span>
-          </p>
-        )}
-
-        {selectedDaiVanCungIndex !== null && daiVanLocKy && (
-          <p className="text-xs text-gray-600">
-            Lộc/Kỵ của Đại Vận <span className="font-semibold">{selectedDaiVan}</span> ({palaces[selectedDaiVanCungIndex].can} - Mệnh Vận {palaces[selectedDaiVanCungIndex].name}):
-            <span className="text-blue-600 ml-1">LĐV1 {getDaiVanRoleName?.(daiVanLocKy.loc[0]) ?? palaces[daiVanLocKy.loc[0]].name} Vận</span>,
-            <span className="text-blue-500"> LĐV2 {getDaiVanRoleName?.(daiVanLocKy.loc[1]) ?? palaces[daiVanLocKy.loc[1]].name} Vận</span>,
-            <span className="text-blue-400"> LĐV3 {getDaiVanRoleName?.(daiVanLocKy.loc[2]) ?? palaces[daiVanLocKy.loc[2]].name} Vận</span>
-            <span className="text-gray-400 mx-1">·</span>
-            <span className="text-gray-800">KĐV1 {getDaiVanRoleName?.(daiVanLocKy.ky[0]) ?? palaces[daiVanLocKy.ky[0]].name} Vận</span>,
-            <span className="text-gray-600"> KĐV2 {getDaiVanRoleName?.(daiVanLocKy.ky[1]) ?? palaces[daiVanLocKy.ky[1]].name} Vận</span>,
-            <span className="text-gray-500"> KĐV3 {getDaiVanRoleName?.(daiVanLocKy.ky[2]) ?? palaces[daiVanLocKy.ky[2]].name} Vận</span>
-          </p>
-        )}
-      </div>
       </div>
 
       {/* 12-palace board - Tứ Hóa Phái layout */}
       <div className="feng-board mx-auto mt-6 max-w-5xl rounded-[1.6rem] p-3 md:p-5">
-      <div className="hidden">
-        <div className="mb-3 rounded-2xl border border-amber-200/70 bg-white/90 p-3 shadow-sm">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Lá số mobile</p>
-              <h4 className="mt-1 font-serif text-base font-bold text-amber-950">Danh sách cung dễ đọc hơn</h4>
-            </div>
-            {selectedRoleName && (
-              <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-900 ring-1 ring-amber-200">
-                Đang xem: {selectedRoleName}
-              </span>
-            )}
-          </div>
-          <p className="mt-2 text-xs leading-relaxed text-slate-600">
-            Trên mobile, các cung được trải thành lưới 2 cột để đọc sao và trạng thái rõ hơn. Phần phân tích bên dưới không thay đổi.
-          </p>
-        </div>
-
-        <div className="mb-3">
-          {boardCenterCard}
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          {boardPalaceOrder.map((index) => (
-            <div key={`mobile-palace-${index}`}>
-              {renderBoardPalace(index)}
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="relative z-10 mx-auto grid max-w-4xl grid-cols-4 gap-2 md:gap-3">
         {/* Row 1: Tỵ -> Thân */}
         {renderBoardPalace(5)}
@@ -2515,41 +2290,8 @@ export function TuViBoard({ chart }: Props) {
 
         {/* Row 2: Thìn + center + Dậu */}
         {renderBoardPalace(4)}
-        <div className="feng-medallion col-span-2 row-span-2 flex flex-col items-center justify-center rounded-[1.35rem] p-3 text-center md:p-4">
-          <span className="feng-kicker !bg-amber-900/6 !text-amber-900 !shadow-none">Trung tâm lá số</span>
-          <h3 className="mt-3 font-serif text-base font-bold text-amber-950 md:text-lg">Tứ Hóa Phái</h3>
-          <p className="mt-1 font-serif text-sm font-semibold text-slate-800 md:text-base">{chart.name || 'Vô danh'}</p>
-          <p className="text-[10px] md:text-xs text-slate-600">{chart.canChi.year} · {chart.amDuong}</p>
-          <div className="mt-3 space-y-1 text-xs md:text-sm">
-            <p><span className="font-semibold text-red-700">{chart.menhCung.label}:</span> {chart.menhCung.chi}</p>
-            <p><span className="font-semibold text-blue-700">{chart.thanCung.label}:</span> {chart.thanCung.chi}</p>
-            <p className="font-serif text-base font-bold text-amber-900 md:text-lg">{chart.menhCuc}</p>
-          </div>
-          {!isQuaiMode && selectedDaiVan !== null && (
-            <p className="mt-3 rounded-full bg-amber-100/80 px-3 py-1 text-xs font-semibold text-amber-900 ring-1 ring-amber-200 md:text-sm">
-              Đang xem Đại Vận {selectedDaiVan}
-            </p>
-          )}
-          {!isQuaiMode && yearInfo && (
-            <p className="mt-2 rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-800 ring-1 ring-rose-200 md:text-sm">
-              Đang xem năm {selectedYear}: Mệnh năm {palaces[yearInfo.chiIndex].name}
-            </p>
-          )}
-          {isQuaiMode && quaiInfo && (
-            <>
-              <p className="mt-3 rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-800 ring-1 ring-rose-200 md:text-sm">
-                Mệnh quái tại {palaces[quaiInfo.chiIndex].chi} · {getQuaiDisplayName(quaiInfo.chiIndex)}
-              </p>
-              <p className="mt-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 md:text-sm">
-                Người B: {quaiBirthYear} ({quaiInfo.can} {quaiInfo.chi})
-              </p>
-            </>
-          )}
-          {selectedCungIndex !== null && (
-            <p className="mt-2 text-[10px] md:text-xs text-slate-500">
-              Click cung để xem Lộc/Kỵ
-            </p>
-          )}
+        <div className="col-span-2 row-span-2">
+          {boardCenterCard}
         </div>
         {renderBoardPalace(9)}
 
@@ -3180,7 +2922,7 @@ export function TuViBoard({ chart }: Props) {
       )}
 
       {/* Panel Kết luận tổng hợp */}
-      {selectedCungIndex !== null && (
+      {selectedCungIndex !== null && !isQuaiMode && (
         <div className="mx-auto mt-4 max-w-5xl rounded-2xl border border-emerald-200 bg-white p-4 text-sm shadow-sm md:p-5 md:text-base">
           <h4 className="font-bold text-emerald-900 mb-3 text-base md:text-lg font-serif">
             Kết luận tổng hợp

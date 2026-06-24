@@ -4,29 +4,30 @@ import { TuViBoard } from './components/TuViBoard';
 import { buildChart } from './utils/chartBuilder';
 import type { BirthInput, TuViChart } from './types/tuVi';
 
-const thienBanWatermark = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600' fill='none'%3E%3Ccircle cx='300' cy='300' r='220' stroke='%23b45309' stroke-opacity='0.08' stroke-width='2'/%3E%3Ccircle cx='300' cy='300' r='170' stroke='%23b45309' stroke-opacity='0.06' stroke-width='1.5'/%3E%3Ccircle cx='300' cy='300' r='120' stroke='%23b45309' stroke-opacity='0.05' stroke-width='1.2'/%3E%3Cpath d='M300 40V560M40 300H560M112 112L488 488M488 112L112 488' stroke='%23b45309' stroke-opacity='0.05' stroke-width='1'/%3E%3Ccircle cx='300' cy='300' r='9' fill='%23b45309' fill-opacity='0.10'/%3E%3C/svg%3E")`;
+const imperialWatermark = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600' fill='none'%3E%3Ccircle cx='300' cy='300' r='222' stroke='%23D4AF37' stroke-opacity='0.16' stroke-width='2'/%3E%3Ccircle cx='300' cy='300' r='174' stroke='%23F3D27A' stroke-opacity='0.12' stroke-width='1.5'/%3E%3Ccircle cx='300' cy='300' r='126' stroke='%238B5CF6' stroke-opacity='0.1' stroke-width='1.2'/%3E%3Cpath d='M300 42V558M42 300H558M118 118L482 482M482 118L118 482' stroke='%23D4AF37' stroke-opacity='0.08' stroke-width='1'/%3E%3Ccircle cx='300' cy='300' r='10' fill='%23F3D27A' fill-opacity='0.16'/%3E%3C/svg%3E")`;
 
 function TuHoaHeroLogo() {
   return (
-    <div className="mx-auto flex w-full max-w-[150px] items-center justify-center md:max-w-[190px]">
+    <div className="mx-auto flex w-full max-w-[168px] items-center justify-center md:mx-0 md:max-w-[220px]">
       <svg
         viewBox="0 0 320 320"
         role="img"
-        aria-label="Logo Tứ Hóa Phái"
-        className="h-auto w-full drop-shadow-[0_16px_32px_rgba(120,53,15,0.28)]"
+        aria-label="Logo Tử Hóa Phái"
+        className="h-auto w-full drop-shadow-[0_20px_40px_rgba(2,6,23,0.55)]"
       >
         <defs>
-          <linearGradient id="heroGold" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#fde68a" />
-            <stop offset="50%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#b45309" />
+          <linearGradient id="imperialGold" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#F8EFD2" />
+            <stop offset="38%" stopColor="#F3D27A" />
+            <stop offset="72%" stopColor="#D4AF37" />
+            <stop offset="100%" stopColor="#8A6318" />
           </linearGradient>
-          <linearGradient id="heroCopper" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#fff7ed" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#fed7aa" stopOpacity="0.52" />
+          <linearGradient id="imperialViolet" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#0F172A" stopOpacity="0.2" />
           </linearGradient>
-          <filter id="heroGlow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="10" result="blur" />
+          <filter id="imperialGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="12" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -34,16 +35,16 @@ function TuHoaHeroLogo() {
           </filter>
         </defs>
 
-        <circle cx="160" cy="160" r="138" fill="rgba(251,191,36,0.08)" />
-        <circle cx="160" cy="160" r="124" fill="none" stroke="rgba(254,243,199,0.44)" strokeWidth="1.5" />
-        <circle cx="160" cy="160" r="108" fill="none" stroke="url(#heroGold)" strokeWidth="7" />
-        <circle cx="160" cy="160" r="90" fill="none" stroke="rgba(255,247,237,0.72)" strokeWidth="1.2" />
-        <circle cx="160" cy="160" r="70" fill="rgba(120,53,15,0.2)" stroke="rgba(254,243,199,0.48)" strokeWidth="1.2" />
+        <circle cx="160" cy="160" r="140" fill="rgba(11,16,32,0.75)" />
+        <circle cx="160" cy="160" r="126" fill="none" stroke="rgba(243,210,122,0.22)" strokeWidth="1.5" />
+        <circle cx="160" cy="160" r="110" fill="none" stroke="url(#imperialGold)" strokeWidth="7" />
+        <circle cx="160" cy="160" r="92" fill="none" stroke="rgba(248,239,210,0.44)" strokeWidth="1.2" />
+        <circle cx="160" cy="160" r="72" fill="url(#imperialViolet)" stroke="rgba(243,210,122,0.4)" strokeWidth="1.2" />
 
         {[...Array(12)].map((_, index) => {
           const angle = (index * 30 * Math.PI) / 180;
-          const x1 = 160 + Math.cos(angle) * 96;
-          const y1 = 160 + Math.sin(angle) * 96;
+          const x1 = 160 + Math.cos(angle) * 94;
+          const y1 = 160 + Math.sin(angle) * 94;
           const x2 = 160 + Math.cos(angle) * 118;
           const y2 = 160 + Math.sin(angle) * 118;
           return (
@@ -53,8 +54,8 @@ function TuHoaHeroLogo() {
               y1={y1}
               x2={x2}
               y2={y2}
-              stroke="rgba(254,243,199,0.82)"
-              strokeWidth={index % 3 === 0 ? 3.2 : 2}
+              stroke="rgba(243,210,122,0.88)"
+              strokeWidth={index % 3 === 0 ? 3.2 : 1.8}
               strokeLinecap="round"
             />
           );
@@ -64,20 +65,20 @@ function TuHoaHeroLogo() {
           const rad = (angle * Math.PI) / 180;
           const cx = 160 + Math.cos(rad) * 58;
           const cy = 160 + Math.sin(rad) * 58;
-          return <circle key={`hoa-${angle}`} cx={cx} cy={cy} r="8" fill="url(#heroGold)" filter="url(#heroGlow)" />;
+          return <circle key={`hoa-${angle}`} cx={cx} cy={cy} r="8" fill="url(#imperialGold)" filter="url(#imperialGlow)" />;
         })}
 
         <path
-          d="M160 92 L206 160 L160 228 L114 160 Z"
-          fill="rgba(120,53,15,0.34)"
-          stroke="url(#heroCopper)"
-          strokeWidth="2.6"
+          d="M160 90 L210 160 L160 230 L110 160 Z"
+          fill="rgba(11,16,32,0.55)"
+          stroke="rgba(248,239,210,0.48)"
+          strokeWidth="2.3"
         />
-        <circle cx="160" cy="160" r="24" fill="url(#heroGold)" filter="url(#heroGlow)" />
-        <circle cx="160" cy="160" r="10" fill="#fff7ed" />
+        <circle cx="160" cy="160" r="24" fill="url(#imperialGold)" filter="url(#imperialGlow)" />
+        <circle cx="160" cy="160" r="10" fill="#fff7dd" />
         <path
           d="M160 114 L160 206 M114 160 L206 160 M128 128 L192 192 M192 128 L128 192"
-          stroke="rgba(254,243,199,0.52)"
+          stroke="rgba(248,239,210,0.48)"
           strokeWidth="1.6"
           strokeLinecap="round"
         />
@@ -99,35 +100,56 @@ function App() {
     : 'empty';
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-3 py-4 md:px-4 md:py-8">
+    <div className="relative min-h-screen overflow-hidden px-3 py-4 md:px-5 md:py-8">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.14),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(180,83,9,0.08),_transparent_30%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(243,210,122,0.08),_transparent_26%),radial-gradient(circle_at_82%_14%,_rgba(139,92,246,0.12),_transparent_24%),radial-gradient(circle_at_18%_84%,_rgba(20,184,166,0.08),_transparent_26%)]" />
         <div
-          className="absolute left-1/2 top-[-180px] h-[420px] w-[420px] -translate-x-1/2 rounded-full opacity-70 md:top-[-160px] md:h-[520px] md:w-[520px]"
+          className="absolute left-1/2 top-[-220px] h-[480px] w-[480px] -translate-x-1/2 opacity-70 md:top-[-180px] md:h-[620px] md:w-[620px]"
           style={{
-            backgroundImage: thienBanWatermark,
+            backgroundImage: imperialWatermark,
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
             backgroundSize: 'contain',
           }}
         />
         <div
-          className="absolute right-[-80px] top-[26%] h-[280px] w-[280px] rounded-full opacity-35"
+          className="absolute right-[-80px] top-[24%] h-[320px] w-[320px] rounded-full opacity-35"
           style={{
-            backgroundImage: thienBanWatermark,
+            backgroundImage: imperialWatermark,
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
             backgroundSize: 'contain',
           }}
         />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/40 to-transparent" />
       </div>
 
       <div className="relative mx-auto max-w-7xl space-y-5">
-        <header className="feng-hero rounded-[1.45rem] px-4 py-4 text-center md:px-6 md:py-5">
-          <div className="relative z-10 flex items-center justify-center">
-            <h1 className="sr-only">Lập Lá Số Tử Vi Tứ Hóa Phái</h1>
-            <TuHoaHeroLogo />
+        <header className="feng-hero rounded-[1.65rem] px-4 py-7 md:px-8 md:py-9">
+          <div className="relative z-10 grid items-center gap-6 md:grid-cols-[minmax(0,1.1fr)_220px] md:gap-8">
+            <div className="text-center md:text-left">
+              <div className="feng-kicker">Imperial Dark Astrology UI</div>
+              <h1 className="mt-4 font-serif text-4xl font-bold tracking-tight text-[var(--text-main)] md:text-5xl">
+                Tử Hóa Phái
+              </h1>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)] md:text-base">
+                Luận giải Lộc - Quyền - Khoa - Kỵ theo Tiên Thiên, Đại Vận, Lưu Niên và Nhập Quái.
+              </p>
+              <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center md:justify-start">
+                <a
+                  href="#birth-form"
+                  className="feng-button-primary inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold"
+                >
+                  Lập lá số ngay
+                </a>
+                <span className="imperial-button-secondary inline-flex items-center rounded-xl px-4 py-3 text-xs font-medium text-[var(--text-muted)]">
+                  Giữ nguyên thuật toán, nâng cấp toàn bộ trải nghiệm hiển thị
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-center md:justify-end">
+              <TuHoaHeroLogo />
+            </div>
           </div>
         </header>
 
@@ -135,8 +157,8 @@ function App() {
         {chart && <TuViBoard key={chartKey} chart={chart} />}
 
         {!chart && (
-          <div className="feng-panel rounded-[1.35rem] px-5 py-10 text-center text-sm text-amber-900/70 md:px-6">
-            Nhập thông tin và bấm <span className="font-semibold text-amber-800">Lập lá số</span> để xem sơ đồ.
+          <div className="feng-panel rounded-[1.35rem] px-5 py-10 text-center text-sm text-[var(--text-muted)] md:px-6">
+            Nhập thông tin và bấm <span className="font-semibold text-[var(--gold-soft)]">Lập lá số</span> để hiển thị bàn đồ và phần luận giải.
           </div>
         )}
       </div>
