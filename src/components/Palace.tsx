@@ -19,11 +19,12 @@ interface Props {
   affectedDaiVan?: AffectedDaiVan | null;
   yearCanMap?: Record<number, string> | null;
   activeMenhIndex?: number | null;
+  activeMenhLabel?: string | null;
   yearRoleName?: string | null;
   onSelect?: () => void;
 }
 
-export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affectedDaiVan, yearCanMap, activeMenhIndex, yearRoleName, onSelect }: Props) {
+export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affectedDaiVan, yearCanMap, activeMenhIndex, activeMenhLabel, yearRoleName, onSelect }: Props) {
   const { index, name, can, chi, isMenh, isThan, daiVan, stars } = palace;
   const displayCan = yearCanMap?.[index] ?? can;
   const isActiveMenh = activeMenhIndex === index;
@@ -129,7 +130,7 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
       {isActiveMenh && !isMenh && (
         <div className="absolute left-1.5 top-1.5 z-10">
           <span className="text-[9px] md:text-[10px] font-bold text-white bg-gradient-to-r from-rose-500 to-rose-600 px-2 py-0.5 rounded-md shadow-sm ring-1 ring-rose-400/50">
-            Mệnh năm
+            {activeMenhLabel ?? 'Mệnh năm'}
           </span>
         </div>
       )}

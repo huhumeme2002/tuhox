@@ -3,19 +3,7 @@ import type { TuViChart, Palace, Can, CungName } from '../types/tuVi';
 import { TU_HOA_TABLE, CUNG_NAMES, CAN, CHI } from '../data/constants';
 import { Palace as PalaceComponent } from './Palace';
 import { getCurrentLunarYear } from '../utils/calendar';
-
-const NGU_HO_DON: Record<string, Can> = {
-  'Giáp': 'Bính',
-  'Kỷ': 'Bính',
-  'Ất': 'Mậu',
-  'Canh': 'Mậu',
-  'Bính': 'Canh',
-  'Tân': 'Canh',
-  'Đinh': 'Nhâm',
-  'Nhâm': 'Nhâm',
-  'Mậu': 'Giáp',
-  'Quý': 'Giáp',
-};
+import { getNguHoDonCanMap } from '../utils/canChi';
 
 function getYearCanChi(year: number): { can: Can; chi: string; chiIndex: number } {
   const canIndex = ((year - 4) % 10 + 10) % 10;
@@ -24,14 +12,7 @@ function getYearCanChi(year: number): { can: Can; chi: string; chiIndex: number 
 }
 
 function getYearCanMap(yearCan: Can): Record<number, Can> {
-  const canDau = NGU_HO_DON[yearCan];
-  const canIndex = CAN.indexOf(canDau);
-  const map: Record<number, Can> = {};
-  for (let i = 0; i < 12; i++) {
-    // Dần (index 2) là canDau; dịch theo 12 cung rồi mới quay vòng 10 can.
-    map[i] = CAN[(canIndex + (i - 2 + 12) % 12) % 10];
-  }
-  return map;
+  return getNguHoDonCanMap(yearCan);
 }
 
 function getGocCan(chart: TuViChart): Can {
@@ -231,13 +212,17 @@ export function TuViBoard({ chart }: Props) {
     [palaces]
   );
 
-  type ViewMode = 'tienThien' | 'daiVan' | 'nam';
+  type ViewMode = 'tienThien' | 'daiVan' | 'nam' | 'quai';
   const [viewMode, setViewMode] = useState<ViewMode>('tienThien');
   const [selectedDaiVan, setSelectedDaiVan] = useState<number | null>(null);
   const [selectedCungIndex, setSelectedCungIndex] = useState<number | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [currentAge, setCurrentAge] = useState<number | null>(null);
   const [showYearRanking, setShowYearRanking] = useState(false);
+  const [showQuaiYearRanking, setShowQuaiYearRanking] = useState(false);
+  const [quaiBirthYear, setQuaiBirthYear] = useState<number | null>(null);
+  const [quaiSelectedDaiVan, setQuaiSelectedDaiVan] = useState<number | null>(null);
+  const [quaiSelectedYear, setQuaiSelectedYear] = useState<number | null>(() => getCurrentLunarYear());
 
   const yearInfo = useMemo(() => {
     if (selectedYear === null) return null;
@@ -271,6 +256,40 @@ export function TuViBoard({ chart }: Props) {
     }
     return result;
   }, [effectiveCurrentAge, daiVanOptions]);
+
+  const switchViewMode = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
+    setSelectedCungIndex(null);
+    setShowYearRanking(false);
+    setShowQuaiYearRanking(false);
+
+    if (mode === 'tienThien') {
+      setSelectedDaiVan(null);
+      setSelectedYear(null);
+      setCurrentAge(null);
+      return;
+    }
+
+    if (mode === 'daiVan') {
+      setSelectedYear(null);
+      setCurrentAge(null);
+      setSelectedDaiVan(daiVanOptions[0] ?? null);
+      return;
+    }
+
+    if (mode === 'nam') {
+      setSelectedDaiVan(null);
+      setSelectedYear(getCurrentLunarYear());
+      setCurrentAge(null);
+      return;
+    }
+
+    setSelectedDaiVan(null);
+    setSelectedYear(null);
+    setCurrentAge(null);
+    setQuaiSelectedDaiVan((prev) => prev ?? currentDaiVan ?? daiVanOptions[0] ?? null);
+    setQuaiSelectedYear((prev) => prev ?? getCurrentLunarYear());
+  }, [currentDaiVan, daiVanOptions]);
 
   const selectedDaiVanCungIndex = useMemo(
     () => (selectedDaiVan !== null ? palaces.findIndex((p) => p.daiVan === selectedDaiVan) : null),
@@ -366,6 +385,133 @@ export function TuViBoard({ chart }: Props) {
     }
     return { loc, ky };
   }, [chart, palaces]);
+
+  const isQuaiMode = viewMode === 'quai';
+
+  const quaiInfo = useMemo(() => {
+    if (quaiBirthYear === null) return null;
+    const { can, chi, chiIndex } = getYearCanChi(quaiBirthYear);
+    return {
+      can,
+      chi,
+      chiIndex,
+      canMap: getYearCanMap(can),
+    };
+  }, [quaiBirthYear]);
+
+  const quaiYearInfo = useMemo(() => {
+    if (quaiSelectedYear === null) return null;
+    const { can, chi, chiIndex } = getYearCanChi(quaiSelectedYear);
+    return {
+      can,
+      chi,
+      chiIndex,
+      yearCanMap: getYearCanMap(can),
+    };
+  }, [quaiSelectedYear]);
+
+  const quaiSelectedDaiVanCungIndex = useMemo(
+    () => (quaiSelectedDaiVan !== null ? palaces.findIndex((p) => p.daiVan === quaiSelectedDaiVan) : null),
+    [quaiSelectedDaiVan, palaces]
+  );
+
+  const getQuaiRoleName = useCallback((index: number) => {
+    if (!quaiInfo) return null;
+    return `${CUNG_NAMES[(index - quaiInfo.chiIndex + 12) % 12]} quái`;
+  }, [quaiInfo]);
+
+  const getQuaiDisplayName = useCallback((index: number) => {
+    return getQuaiRoleName(index) ?? palaces[index].name;
+  }, [getQuaiRoleName, palaces]);
+
+  const quaiRoleIndex = useMemo(() => {
+    if (selectedCungIndex === null || !quaiInfo) return null;
+    return (selectedCungIndex - quaiInfo.chiIndex + 12) % 12;
+  }, [selectedCungIndex, quaiInfo]);
+
+  const quaiRoleName = useMemo(
+    () => (quaiRoleIndex !== null ? CUNG_NAMES[quaiRoleIndex] : null),
+    [quaiRoleIndex]
+  );
+
+  const quaiGocRoleIndex = useMemo(() => {
+    if (quaiRoleIndex === null) return null;
+    return (gocMenhIndex + quaiRoleIndex) % 12;
+  }, [quaiRoleIndex, gocMenhIndex]);
+
+  const quaiDaiVanRoleIndex = useMemo(() => {
+    if (quaiRoleIndex === null || quaiSelectedDaiVanCungIndex === null) return null;
+    return (quaiSelectedDaiVanCungIndex + quaiRoleIndex) % 12;
+  }, [quaiRoleIndex, quaiSelectedDaiVanCungIndex]);
+
+  const quaiNamRoleIndex = useMemo(() => {
+    if (quaiRoleIndex === null || !quaiYearInfo) return null;
+    return (quaiYearInfo.chiIndex + quaiRoleIndex) % 12;
+  }, [quaiRoleIndex, quaiYearInfo]);
+
+  const quaiLocKy = useMemo(() => {
+    if (selectedCungIndex === null || !quaiInfo) return null;
+    return calculateLocKy(quaiInfo.canMap[selectedCungIndex], palaces);
+  }, [selectedCungIndex, quaiInfo, palaces]);
+
+  const quaiExtendedLocKy = useMemo(() => {
+    if (selectedCungIndex === null || !quaiInfo) return null;
+    return calculateExtendedLocKy(
+      quaiInfo.canMap[selectedCungIndex],
+      palaces,
+      gocTuHoaPalaces.loc,
+      gocTuHoaPalaces.ky,
+      (index: number) => palaces[index].can
+    );
+  }, [selectedCungIndex, quaiInfo, palaces, gocTuHoaPalaces]);
+
+  const quaiGocLocKy = useMemo(() => {
+    if (quaiGocRoleIndex === null) return null;
+    return calculateLocKy(palaces[quaiGocRoleIndex].can, palaces);
+  }, [quaiGocRoleIndex, palaces]);
+
+  const quaiGocExtendedLocKy = useMemo(() => {
+    if (quaiGocRoleIndex === null) return null;
+    return calculateExtendedLocKy(
+      palaces[quaiGocRoleIndex].can,
+      palaces,
+      gocTuHoaPalaces.loc,
+      gocTuHoaPalaces.ky,
+      (index: number) => palaces[index].can
+    );
+  }, [quaiGocRoleIndex, palaces, gocTuHoaPalaces]);
+
+  const quaiDaiVanLocKy = useMemo(() => {
+    if (quaiDaiVanRoleIndex === null) return null;
+    return calculateLocKy(palaces[quaiDaiVanRoleIndex].can, palaces);
+  }, [quaiDaiVanRoleIndex, palaces]);
+
+  const quaiDaiVanExtendedLocKy = useMemo(() => {
+    if (quaiDaiVanRoleIndex === null) return null;
+    return calculateExtendedLocKy(
+      palaces[quaiDaiVanRoleIndex].can,
+      palaces,
+      gocTuHoaPalaces.loc,
+      gocTuHoaPalaces.ky,
+      (index: number) => palaces[index].can
+    );
+  }, [quaiDaiVanRoleIndex, palaces, gocTuHoaPalaces]);
+
+  const quaiNamLocKy = useMemo(() => {
+    if (quaiNamRoleIndex === null || !quaiYearInfo) return null;
+    return calculateLocKy(quaiYearInfo.yearCanMap[quaiNamRoleIndex], palaces);
+  }, [quaiNamRoleIndex, quaiYearInfo, palaces]);
+
+  const quaiNamExtendedLocKy = useMemo(() => {
+    if (quaiNamRoleIndex === null || !quaiYearInfo) return null;
+    return calculateExtendedLocKy(
+      quaiYearInfo.yearCanMap[quaiNamRoleIndex],
+      palaces,
+      gocTuHoaPalaces.loc,
+      gocTuHoaPalaces.ky,
+      (index: number) => palaces[index].can
+    );
+  }, [quaiNamRoleIndex, quaiYearInfo, palaces, gocTuHoaPalaces]);
 
   // Tên vai trò của một cung trong Đại Vận đang chọn
   const getDaiVanRoleName = useMemo(() => {
@@ -542,6 +688,26 @@ export function TuViBoard({ chart }: Props) {
 
     return result;
   }, [viewMode, selectedYear, selectedCungIndex, clickRoleIndex, gocMenhIndex, activeDaiVanCungIndex, activeMenhIndex, gocRoleCungIndex, daiVanRoleCungIndex, namRoleCungIndex, gocLocKy, daiVanLocKy, namLocKy, gocExtendedLocKy, daiVanExtendedLocKy, namExtendedLocKy]);
+
+  const visibleKetLuan = useMemo(() => {
+    if (viewMode === 'tienThien') {
+      return {
+        tienThien: ketLuan.tienThien,
+        daiVan: [] as KetLuanItem[],
+        nam: [] as KetLuanItem[],
+      };
+    }
+
+    if (viewMode === 'daiVan') {
+      return {
+        tienThien: ketLuan.tienThien,
+        daiVan: ketLuan.daiVan,
+        nam: [] as KetLuanItem[],
+      };
+    }
+
+    return ketLuan;
+  }, [viewMode, ketLuan]);
 
 
 
@@ -1151,6 +1317,7 @@ export function TuViBoard({ chart }: Props) {
   };
 
   const getTargetLayerOrder = (target: string) => {
+    if (target.includes('quái')) return -1;
     if (target.includes('tiên thiên')) return 0;
     if (target.includes('Vận')) return 1;
     if (target.includes('năm')) return 2;
@@ -1226,6 +1393,336 @@ export function TuViBoard({ chart }: Props) {
       }));
   };
 
+  const quaiAnalysis = useMemo(() => {
+    if (
+      !isQuaiMode ||
+      selectedCungIndex === null ||
+      !quaiInfo ||
+      quaiRoleName === null ||
+      !quaiLocKy
+    ) {
+      return null;
+    }
+
+    const quaiRoleLabel = `${quaiRoleName} quái`;
+    const forward: ImpactDetail[] = [];
+    const backward: ImpactDetail[] = [];
+
+    const addImpacts = (
+      bucket: ImpactDetail[],
+      sourceLocKy: LocKyLike | null,
+      sourceLabel: string,
+      targetMenhIndex: number | null,
+      targetRoleIndex: number | null,
+      targetMenhLabel: string,
+      targetRoleLabel: string,
+      distance: number,
+      extended = false
+    ) => {
+      if (!sourceLocKy || targetMenhIndex === null || targetRoleIndex === null) return;
+      const startLevel = extended ? 4 : 1;
+      const maxExtendedItems = 6;
+      const sameTarget = targetMenhIndex === targetRoleIndex;
+
+      const pushImpactSeries = (
+        type: 'Lộc' | 'Kỵ',
+        hits: readonly number[],
+        infinite: boolean | undefined
+      ) => {
+        const isGood = type === 'Lộc';
+        const infiniteLevel = isGood ? sourceLocKy.locInfiniteStartLevel : sourceLocKy.kyInfiniteStartLevel;
+        const infiniteIndex = isGood ? sourceLocKy.locInfiniteIndex : sourceLocKy.kyInfiniteIndex;
+        const infiniteMenh = Boolean(infinite && infiniteIndex === targetMenhIndex);
+        const infiniteRole = Boolean(infinite && !sameTarget && infiniteIndex === targetRoleIndex);
+
+        hits.forEach((idx, i) => {
+          const level = i + startLevel;
+          const isMenh = idx === targetMenhIndex;
+          const isRole = idx === targetRoleIndex;
+          if (!isMenh && !isRole) return;
+          if (sameTarget && !isMenh) return;
+          if ((isMenh && infiniteMenh) || (isRole && infiniteRole)) return;
+
+          const target = isMenh ? targetMenhLabel : targetRoleLabel;
+          const strength = getStrengthLabel(level, distance, type);
+          const point = getImpactMagnitude(level, distance) * (isGood ? 1 : -1);
+          bucket.push({
+            text: `${getImpactDisplayName(type, level)} ${sourceLabel} xung vào ${target} (${strength})`,
+            point,
+            good: isGood,
+            target,
+          });
+        });
+
+        if (!infinite || infiniteLevel === undefined || infiniteIndex === undefined) return;
+
+        const pushInfinite = (isMenh: boolean) => {
+          const target = isMenh ? targetMenhLabel : targetRoleLabel;
+          const strength = getStrengthLabel(infiniteLevel, distance, type);
+          const point = getImpactMagnitude(infiniteLevel, distance) * (isGood ? 1 : -1);
+          bucket.push({
+            text: `${getInfiniteImpactDisplayName(type)} ${sourceLabel} xung vào ${target} (${strength}, khởi từ ${getImpactDisplayName(type, infiniteLevel)}) (Vô hạn)`,
+            point,
+            good: isGood,
+            target,
+          });
+        };
+
+        if (infiniteMenh) pushInfinite(true);
+        if (infiniteRole) pushInfinite(false);
+      };
+
+      pushImpactSeries('Lộc', extended ? sourceLocKy.loc.slice(0, maxExtendedItems) : sourceLocKy.loc, extended ? sourceLocKy.locInfinite : false);
+      pushImpactSeries('Kỵ', extended ? sourceLocKy.ky.slice(0, maxExtendedItems) : sourceLocKy.ky, extended ? sourceLocKy.kyInfinite : false);
+    };
+
+    addImpacts(forward, quaiLocKy, quaiRoleLabel, quaiInfo.chiIndex, selectedCungIndex, 'Mệnh quái', quaiRoleLabel, 0);
+    addImpacts(forward, quaiExtendedLocKy, quaiRoleLabel, quaiInfo.chiIndex, selectedCungIndex, 'Mệnh quái', quaiRoleLabel, 0, true);
+    addImpacts(forward, quaiLocKy, quaiRoleLabel, gocMenhIndex, quaiGocRoleIndex, 'Mệnh tiên thiên', `${quaiRoleName} tiên thiên`, 0);
+    addImpacts(forward, quaiExtendedLocKy, quaiRoleLabel, gocMenhIndex, quaiGocRoleIndex, 'Mệnh tiên thiên', `${quaiRoleName} tiên thiên`, 0, true);
+    addImpacts(forward, quaiLocKy, quaiRoleLabel, quaiSelectedDaiVanCungIndex, quaiDaiVanRoleIndex, 'Mệnh Vận', `${quaiRoleName} Vận`, 1);
+    addImpacts(forward, quaiExtendedLocKy, quaiRoleLabel, quaiSelectedDaiVanCungIndex, quaiDaiVanRoleIndex, 'Mệnh Vận', `${quaiRoleName} Vận`, 1, true);
+    addImpacts(forward, quaiLocKy, quaiRoleLabel, quaiYearInfo?.chiIndex ?? null, quaiNamRoleIndex, 'Mệnh năm', `${quaiRoleName} năm`, 2);
+    addImpacts(forward, quaiExtendedLocKy, quaiRoleLabel, quaiYearInfo?.chiIndex ?? null, quaiNamRoleIndex, 'Mệnh năm', `${quaiRoleName} năm`, 2, true);
+
+    addImpacts(backward, quaiGocLocKy, `${quaiRoleName} tiên thiên`, quaiInfo.chiIndex, selectedCungIndex, 'Mệnh quái', quaiRoleLabel, 0);
+    addImpacts(backward, quaiGocExtendedLocKy, `${quaiRoleName} tiên thiên`, quaiInfo.chiIndex, selectedCungIndex, 'Mệnh quái', quaiRoleLabel, 0, true);
+    addImpacts(backward, quaiDaiVanLocKy, `${quaiRoleName} Vận`, quaiInfo.chiIndex, selectedCungIndex, 'Mệnh quái', quaiRoleLabel, 1);
+    addImpacts(backward, quaiDaiVanExtendedLocKy, `${quaiRoleName} Vận`, quaiInfo.chiIndex, selectedCungIndex, 'Mệnh quái', quaiRoleLabel, 1, true);
+    addImpacts(backward, quaiNamLocKy, `${quaiRoleName} năm`, quaiInfo.chiIndex, selectedCungIndex, 'Mệnh quái', quaiRoleLabel, 2);
+    addImpacts(backward, quaiNamExtendedLocKy, `${quaiRoleName} năm`, quaiInfo.chiIndex, selectedCungIndex, 'Mệnh quái', quaiRoleLabel, 2, true);
+
+    return {
+      roleLabel: quaiRoleLabel,
+      forward,
+      backward,
+      forwardSummary: summarizeYearImpacts(forward),
+      backwardSummary: summarizeYearImpacts(backward),
+    };
+  }, [
+    isQuaiMode,
+    selectedCungIndex,
+    quaiInfo,
+    quaiRoleName,
+    quaiLocKy,
+    quaiExtendedLocKy,
+    gocMenhIndex,
+    quaiGocRoleIndex,
+    quaiSelectedDaiVanCungIndex,
+    quaiDaiVanRoleIndex,
+    quaiYearInfo,
+    quaiNamRoleIndex,
+    quaiGocLocKy,
+    quaiGocExtendedLocKy,
+    quaiDaiVanLocKy,
+    quaiDaiVanExtendedLocKy,
+    quaiNamLocKy,
+    quaiNamExtendedLocKy,
+  ]);
+
+  const quaiYearRanking = useMemo(() => {
+    const targetDaiVan = quaiSelectedDaiVan ?? currentDaiVan;
+    if (
+      !isQuaiMode ||
+      selectedCungIndex === null ||
+      quaiRoleIndex === null ||
+      quaiRoleName === null ||
+      !quaiInfo ||
+      targetDaiVan === null
+    ) {
+      return null;
+    }
+
+    const targetDaiVanCungIndex = palaces.findIndex((p) => p.daiVan === targetDaiVan);
+    if (targetDaiVanCungIndex === -1) return null;
+
+    const sortedDaiVan = [...daiVanOptions].sort((a, b) => a - b);
+    const dvIndex = sortedDaiVan.indexOf(targetDaiVan);
+    const nextDaiVan = sortedDaiVan[dvIndex + 1];
+    const endAge = nextDaiVan !== undefined ? nextDaiVan - 1 : targetDaiVan + 9;
+    const yearStart = chart.lunarDate.year + targetDaiVan - 1;
+    const yearEnd = chart.lunarDate.year + endAge - 1;
+
+    const quaiSourceLocKy = calculateLocKy(quaiInfo.canMap[selectedCungIndex], palaces);
+    if (!quaiSourceLocKy) return null;
+    const quaiSourceExtended = calculateExtendedLocKy(
+      quaiInfo.canMap[selectedCungIndex],
+      palaces,
+      gocTuHoaPalaces.loc,
+      gocTuHoaPalaces.ky,
+      (index: number) => palaces[index].can
+    );
+
+    const daiVanRoleIndex = (targetDaiVanCungIndex + quaiRoleIndex) % 12;
+    const daiVanRoleCan = palaces[daiVanRoleIndex].can;
+    const daiVanSourceLocKy = calculateLocKy(daiVanRoleCan, palaces);
+    const daiVanSourceExtended = calculateExtendedLocKy(
+      daiVanRoleCan,
+      palaces,
+      gocTuHoaPalaces.loc,
+      gocTuHoaPalaces.ky,
+      (index: number) => palaces[index].can
+    );
+
+    type QuaiYearHit = {
+      source: 'year' | 'quai' | 'daiVan';
+      type: 'Lộc' | 'Kỵ';
+      target: 'menh' | 'role';
+    };
+
+    const result: {
+      year: number;
+      age: number;
+      can: string;
+      chi: string;
+      score: number;
+      level: 'very-good' | 'good' | 'neutral' | 'bad' | 'very-bad';
+      details: ImpactDetail[];
+    }[] = [];
+
+    for (let year = yearStart; year <= yearEnd; year++) {
+      const age = year - chart.lunarDate.year + 1;
+      const { can, chi, chiIndex } = getYearCanChi(year);
+      const yearCanMap = getYearCanMap(can);
+      const yearRoleIndex = (chiIndex + quaiRoleIndex) % 12;
+      const yearRoleCan = yearCanMap[yearRoleIndex];
+      const yearSourceLocKy = calculateLocKy(yearRoleCan, palaces);
+      if (!yearSourceLocKy) continue;
+      const yearSourceExtended = calculateExtendedLocKy(
+        yearRoleCan,
+        palaces,
+        gocTuHoaPalaces.loc,
+        gocTuHoaPalaces.ky,
+        (index: number) => palaces[index].can
+      );
+
+      const details: ImpactDetail[] = [];
+      const hits: QuaiYearHit[] = [];
+      let score = 0;
+      const getYearTargetLabel = (target: 'menh' | 'role') => (
+        target === 'menh' ? 'Mệnh năm' : `${quaiRoleName} năm`
+      );
+
+      const addYearTargetImpacts = (
+        sourceLocKy: LocKyLike | null,
+        sourceLabel: string,
+        source: QuaiYearHit['source'],
+        distance: number,
+        extended = false
+      ) => {
+        if (!sourceLocKy) return;
+        const startLevel = extended ? 4 : 1;
+        const maxExtendedItems = 6;
+        const context: ImpactContext = source === 'year' ? 'year-self' : 'default';
+
+        const pushImpactSeries = (
+          type: 'Lộc' | 'Kỵ',
+          items: readonly number[],
+          infinite: boolean | undefined
+        ) => {
+          const isGood = type === 'Lộc';
+          const infiniteLevel = isGood ? sourceLocKy.locInfiniteStartLevel : sourceLocKy.kyInfiniteStartLevel;
+          const infiniteIndex = isGood ? sourceLocKy.locInfiniteIndex : sourceLocKy.kyInfiniteIndex;
+
+          items.forEach((idx, i) => {
+            const level = i + startLevel;
+            const targetKind = idx === chiIndex ? 'menh' : idx === yearRoleIndex ? 'role' : null;
+            if (!targetKind) return;
+            if (extended && infinite && idx === infiniteIndex) return;
+
+            const target = getYearTargetLabel(targetKind);
+            const strength = getStrengthLabel(level, distance, type, context);
+            const point = getImpactMagnitude(level, distance, context) * (isGood ? 1 : -1);
+            score += point;
+            hits.push({ source, type, target: targetKind });
+            details.push({
+              text: `${getImpactDisplayName(type, level)} ${sourceLabel} xung vào ${target} (${strength})`,
+              point,
+              good: isGood,
+              target,
+            });
+          });
+
+          if (!extended || !infinite || infiniteLevel === undefined || infiniteIndex === undefined) return;
+          if (infiniteIndex !== chiIndex && infiniteIndex !== yearRoleIndex) return;
+
+          const targetKind = infiniteIndex === chiIndex ? 'menh' : 'role';
+          const target = getYearTargetLabel(targetKind);
+          const point = getImpactMagnitude(infiniteLevel, distance, context) * (isGood ? 1 : -1);
+          score += point;
+          hits.push({ source, type, target: targetKind });
+          details.push({
+            text: `${getInfiniteImpactDisplayName(type)} ${sourceLabel} xung vào ${target} (${getStrengthLabel(infiniteLevel, distance, type, context)}, khởi từ ${getImpactDisplayName(type, infiniteLevel)}) (Vô hạn)`,
+            point,
+            good: isGood,
+            target,
+          });
+        };
+
+        pushImpactSeries('Lộc', extended ? sourceLocKy.loc.slice(0, maxExtendedItems) : sourceLocKy.loc, extended ? sourceLocKy.locInfinite : false);
+        pushImpactSeries('Kỵ', extended ? sourceLocKy.ky.slice(0, maxExtendedItems) : sourceLocKy.ky, extended ? sourceLocKy.kyInfinite : false);
+      };
+
+      addYearTargetImpacts(yearSourceLocKy, `${quaiRoleName} năm gốc`, 'year', 0);
+      addYearTargetImpacts(yearSourceExtended, `${quaiRoleName} năm gốc`, 'year', 0, true);
+      addYearTargetImpacts(quaiSourceLocKy, `${quaiRoleName} quái`, 'quai', 1);
+      addYearTargetImpacts(quaiSourceExtended, `${quaiRoleName} quái`, 'quai', 1, true);
+      addYearTargetImpacts(daiVanSourceLocKy, `${quaiRoleName} Vận`, 'daiVan', 1);
+      addYearTargetImpacts(daiVanSourceExtended, `${quaiRoleName} Vận`, 'daiVan', 1, true);
+
+      const hasHit = (type: 'Lộc' | 'Kỵ', target: 'menh' | 'role', source?: QuaiYearHit['source']) =>
+        hits.some((hit) => hit.type === type && hit.target === target && (source === undefined || hit.source === source));
+      const hasAnySourceHit = (type: 'Lộc' | 'Kỵ', source: QuaiYearHit['source']) =>
+        hits.some((hit) => hit.type === type && hit.source === source);
+
+      if (hasHit('Kỵ', 'menh') && hasHit('Kỵ', 'role')) {
+        score -= 2.5;
+      }
+
+      if (hasHit('Lộc', 'menh') && hasHit('Lộc', 'role')) {
+        score += 2.5;
+      }
+
+      if (hasAnySourceHit('Kỵ', 'year') && hasAnySourceHit('Kỵ', 'quai')) {
+        score -= 1.5;
+      }
+
+      if (hasAnySourceHit('Lộc', 'year') && hasAnySourceHit('Lộc', 'quai')) {
+        score += 1.5;
+      }
+
+      if (hasAnySourceHit('Kỵ', 'daiVan') && (hasAnySourceHit('Kỵ', 'year') || hasAnySourceHit('Kỵ', 'quai'))) {
+        score -= 1;
+      }
+
+      if (hasAnySourceHit('Lộc', 'daiVan') && (hasAnySourceHit('Lộc', 'year') || hasAnySourceHit('Lộc', 'quai'))) {
+        score += 1;
+      }
+
+      let level: typeof result[number]['level'] = 'neutral';
+      if (score >= 5) level = 'very-good';
+      else if (score >= 1) level = 'good';
+      else if (score <= -5) level = 'very-bad';
+      else if (score <= -1) level = 'bad';
+
+      result.push({ year, age, can, chi, score, level, details });
+    }
+
+    return result.sort((a, b) => b.score - a.score);
+  }, [
+    quaiSelectedDaiVan,
+    currentDaiVan,
+    isQuaiMode,
+    selectedCungIndex,
+    quaiRoleIndex,
+    quaiRoleName,
+    quaiInfo,
+    palaces,
+    daiVanOptions,
+    chart.lunarDate.year,
+    gocTuHoaPalaces,
+  ]);
+
   const renderImpactLegend = () => (
     <p className="text-[11px] md:text-xs text-gray-500">
       Ký hiệu: <span className="font-semibold text-blue-700">L = Lộc</span>, <span className="font-semibold text-red-700">K = Kỵ</span>.
@@ -1279,10 +1776,57 @@ export function TuViBoard({ chart }: Props) {
     </div>
   );
 
-  const activeLayerLabel = selectedYear !== null ? 'Năm' : selectedDaiVan !== null ? 'Đại Vận' : 'Tiên thiên';
-  const selectedRoleName = selectedCungIndex !== null ? getCungDisplayName(selectedCungIndex) : null;
-  const selectedRoleCan = selectedCungIndex !== null ? getActiveCan(selectedCungIndex) : null;
-  const badKyLabels = new Set((badKy ?? []).map((item) => item.label));
+  const quaiBadKy = useMemo(() => {
+    if (!isQuaiMode || selectedCungIndex === null || !quaiLocKy || !quaiInfo) return null;
+    return quaiLocKy.ky
+      .map((idx, i) => ({ idx, label: `K${i + 1}` }))
+      .filter((item) => item.idx === quaiInfo.chiIndex || item.idx === selectedCungIndex);
+  }, [isQuaiMode, selectedCungIndex, quaiLocKy, quaiInfo]);
+
+  const activeLayerLabel = isQuaiMode
+    ? 'Quái'
+    : selectedYear !== null
+      ? 'Năm'
+      : selectedDaiVan !== null
+        ? 'Đại Vận'
+        : 'Tiên thiên';
+
+  const selectedRoleName = selectedCungIndex !== null
+    ? isQuaiMode
+      ? getQuaiDisplayName(selectedCungIndex)
+      : getCungDisplayName(selectedCungIndex)
+    : null;
+
+  const selectedRoleCan = selectedCungIndex !== null
+    ? isQuaiMode
+      ? quaiInfo?.canMap[selectedCungIndex] ?? null
+      : getActiveCan(selectedCungIndex)
+    : null;
+
+  const displayActiveMenhIndex = isQuaiMode ? quaiInfo?.chiIndex ?? null : activeMenhIndex;
+  const displayActiveMenhLabel = isQuaiMode ? 'Mệnh quái' : 'Mệnh năm';
+  const displayDaiVanCungIndex = isQuaiMode ? null : selectedDaiVanCungIndex;
+  const displayLocKy = isQuaiMode ? quaiLocKy : activeLocKy;
+  const displayDetailLocKy = isQuaiMode ? quaiLocKy : detailLocKy;
+  const displayDaiVanLocKy = isQuaiMode ? null : daiVanLocKy;
+  const displayAffectedDaiVan = isQuaiMode ? null : affectedDaiVan;
+  const displayYearCanMap = isQuaiMode ? quaiInfo?.canMap ?? null : yearInfo?.yearCanMap ?? null;
+  const displayRoleNameOnBoard = isQuaiMode ? getQuaiRoleName : getYearRoleName;
+  const badKyLabels = new Set(((isQuaiMode ? quaiBadKy : badKy) ?? []).map((item) => item.label));
+  const renderBoardPalace = (index: number) => (
+    <PalaceComponent
+      palace={getPalace(index)}
+      daiVanCungIndex={displayDaiVanCungIndex}
+      locKyMap={displayLocKy}
+      daiVanLocKyMap={displayDaiVanLocKy}
+      affectedDaiVan={displayAffectedDaiVan}
+      yearCanMap={displayYearCanMap}
+      activeMenhIndex={displayActiveMenhIndex}
+      activeMenhLabel={displayActiveMenhLabel}
+      yearRoleName={displayRoleNameOnBoard?.(index) ?? null}
+      onSelect={() => setSelectedCungIndex(index)}
+    />
+  );
 
   return (
     <div className="feng-shell mt-6 rounded-[1.35rem] p-3 md:p-5">
@@ -1352,28 +1896,12 @@ export function TuViBoard({ chart }: Props) {
                     { key: 'tienThien', label: 'Tiên thiên' },
                     { key: 'daiVan', label: 'Đại Vận' },
                     { key: 'nam', label: 'Năm' },
+                    { key: 'quai', label: 'Nhập Quái' },
                   ] as { key: ViewMode; label: string }[]).map((m) => (
                     <button
                       key={m.key}
                       type="button"
-                      onClick={() => {
-                        setViewMode(m.key);
-                        setSelectedCungIndex(null);
-                        setShowYearRanking(false);
-                        if (m.key === 'tienThien') {
-                          setSelectedDaiVan(null);
-                          setSelectedYear(null);
-                          setCurrentAge(null);
-                        } else if (m.key === 'daiVan') {
-                          setSelectedYear(null);
-                          setCurrentAge(null);
-                          setSelectedDaiVan(daiVanOptions[0] ?? null);
-                        } else {
-                          setSelectedDaiVan(null);
-                          setSelectedYear(getCurrentLunarYear());
-                          setCurrentAge(null);
-                        }
-                      }}
+                      onClick={() => switchViewMode(m.key)}
                       className={`rounded-xl px-4 py-2 text-xs font-bold transition-all md:text-sm ${
                         viewMode === m.key
                           ? 'bg-amber-600 text-white shadow-sm'
@@ -1434,6 +1962,53 @@ export function TuViBoard({ chart }: Props) {
                     </label>
                   </>
                 )}
+
+                {viewMode === 'quai' && (
+                  <>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Năm sinh người B</span>
+                      <input
+                        type="number"
+                        placeholder="Ví dụ 2005"
+                        value={quaiBirthYear ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setQuaiBirthYear(val ? Number(val) : null);
+                          setSelectedCungIndex(null);
+                        }}
+                        className="feng-input w-full rounded-xl px-3 py-2 text-sm text-slate-900"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Đại Vận của A</span>
+                      <select
+                        value={quaiSelectedDaiVan ?? ''}
+                        onChange={(e) => setQuaiSelectedDaiVan(e.target.value ? Number(e.target.value) : null)}
+                        className="feng-input w-full rounded-xl px-3 py-2 text-sm text-slate-900"
+                      >
+                        <option value="">Không chọn</option>
+                        {daiVanOptions.map((dv) => (
+                          <option key={`quai-dv-${dv}`} value={dv}>
+                            Đại vận {dv}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Năm của A</span>
+                      <input
+                        type="number"
+                        placeholder="Ví dụ 2027"
+                        value={quaiSelectedYear ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setQuaiSelectedYear(val ? Number(val) : null);
+                        }}
+                        className="feng-input w-full rounded-xl px-3 py-2 text-sm text-slate-900"
+                      />
+                    </label>
+                  </>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -1453,6 +2028,45 @@ export function TuViBoard({ chart }: Props) {
                     className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
                   >
                     Bỏ tuổi âm
+                  </button>
+                )}
+                {viewMode === 'quai' && quaiBirthYear !== null && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuaiBirthYear(null);
+                      setSelectedCungIndex(null);
+                    }}
+                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                  >
+                    Xóa năm người B
+                  </button>
+                )}
+                {viewMode === 'quai' && quaiSelectedYear !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setQuaiSelectedYear(null)}
+                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                  >
+                    Bỏ năm của A
+                  </button>
+                )}
+                {viewMode === 'quai' && currentDaiVan !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setQuaiSelectedDaiVan(currentDaiVan)}
+                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                  >
+                    Dùng Đại Vận hiện tại
+                  </button>
+                )}
+                {viewMode === 'quai' && quaiSelectedDaiVan !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setQuaiSelectedDaiVan(null)}
+                    className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
+                  >
+                    Bỏ Đại Vận A
                   </button>
                 )}
                 {selectedCungIndex !== null && (
@@ -1479,12 +2093,27 @@ export function TuViBoard({ chart }: Props) {
                       : `Năm đẹp/xấu cho ${getDaiVanRoleName?.(selectedCungIndex) ?? palaces[selectedCungIndex].name} Vận`}
                   </button>
                 )}
+                {viewMode === 'quai' && quaiInfo && selectedCungIndex !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setShowQuaiYearRanking((s) => !s)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                      showQuaiYearRanking
+                        ? 'bg-violet-600 text-white hover:bg-violet-700'
+                        : 'bg-violet-100 text-violet-800 hover:bg-violet-200'
+                    }`}
+                  >
+                    {showQuaiYearRanking
+                      ? 'Ẩn năm tốt/xấu của Quái'
+                      : `Năm tốt/xấu cho ${getQuaiDisplayName(selectedCungIndex)}`}
+                  </button>
+                )}
               </div>
             </div>
           </section>
         </div>
 
-        {yearInfo && (
+        {viewMode === 'nam' && yearInfo && (
           <div className="grid gap-3 md:grid-cols-3">
             <div className="feng-panel rounded-xl p-3">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Năm đang xem</p>
@@ -1505,6 +2134,37 @@ export function TuViBoard({ chart }: Props) {
           </div>
         )}
 
+        {viewMode === 'quai' && (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="feng-panel rounded-xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Năm sinh người B</p>
+              <p className="mt-1 text-sm font-bold text-amber-900">
+                {quaiInfo ? `${quaiBirthYear}: ${quaiInfo.can} ${quaiInfo.chi}` : 'Chưa nhập'}
+              </p>
+            </div>
+            <div className="feng-panel rounded-xl border-rose-200 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-700">Mệnh quái</p>
+              <p className="mt-1 text-sm font-bold text-rose-900">
+                {quaiInfo ? `${getQuaiDisplayName(quaiInfo.chiIndex)} tại ${palaces[quaiInfo.chiIndex].chi}` : 'Chưa xác định'}
+              </p>
+            </div>
+            <div className="feng-panel rounded-xl border-orange-200 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-orange-700">Đại Vận của A</p>
+              <p className="mt-1 text-sm font-bold text-orange-900">
+                {quaiSelectedDaiVan !== null && quaiSelectedDaiVanCungIndex !== null && quaiSelectedDaiVanCungIndex >= 0
+                  ? `${quaiSelectedDaiVan} tuổi (${palaces[quaiSelectedDaiVanCungIndex].name})`
+                  : 'Không chọn'}
+              </p>
+            </div>
+            <div className="feng-panel rounded-xl border-sky-200 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-sky-700">Năm của A</p>
+              <p className="mt-1 text-sm font-bold text-sky-900">
+                {quaiYearInfo ? `${quaiSelectedYear}: ${quaiYearInfo.can} ${quaiYearInfo.chi}` : 'Không chọn'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {selectedCungIndex !== null && selectedRoleName && (
           <section className="feng-panel rounded-[1.2rem] border-sky-200 p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -1517,11 +2177,20 @@ export function TuViBoard({ chart }: Props) {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 text-xs">
-                {selectedDaiVan !== null && (
+                {!isQuaiMode && selectedDaiVan !== null && (
                   <span className="rounded-full bg-white px-3 py-1 font-medium text-amber-900 ring-1 ring-amber-200">Đại Vận {selectedDaiVan}</span>
                 )}
-                {selectedYear !== null && yearInfo && (
+                {!isQuaiMode && selectedYear !== null && yearInfo && (
                   <span className="rounded-full bg-white px-3 py-1 font-medium text-rose-800 ring-1 ring-rose-200">Năm {selectedYear}: {yearInfo.can} {yearInfo.chi}</span>
+                )}
+                {isQuaiMode && quaiInfo && (
+                  <span className="rounded-full bg-white px-3 py-1 font-medium text-rose-800 ring-1 ring-rose-200">Người B: {quaiBirthYear} ({quaiInfo.can} {quaiInfo.chi})</span>
+                )}
+                {isQuaiMode && quaiSelectedDaiVan !== null && (
+                  <span className="rounded-full bg-white px-3 py-1 font-medium text-amber-900 ring-1 ring-amber-200">Đại Vận A: {quaiSelectedDaiVan}</span>
+                )}
+                {isQuaiMode && quaiSelectedYear !== null && quaiYearInfo && (
+                  <span className="rounded-full bg-white px-3 py-1 font-medium text-sky-800 ring-1 ring-sky-200">Năm A: {quaiSelectedYear} ({quaiYearInfo.can} {quaiYearInfo.chi})</span>
                 )}
                 <span className="rounded-full bg-white px-3 py-1 font-medium text-sky-800 ring-1 ring-sky-200">Click cung để đổi trọng tâm phân tích</span>
               </div>
@@ -1727,13 +2396,13 @@ export function TuViBoard({ chart }: Props) {
       <div className="feng-board mx-auto mt-6 max-w-5xl rounded-[1.6rem] p-3 md:p-5">
       <div className="relative z-10 mx-auto grid max-w-4xl grid-cols-4 gap-2 md:gap-3">
         {/* Row 1: Tỵ -> Thân */}
-        <PalaceComponent palace={getPalace(5)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(5)} onSelect={() => setSelectedCungIndex(5)} />
-        <PalaceComponent palace={getPalace(6)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(6)} onSelect={() => setSelectedCungIndex(6)} />
-        <PalaceComponent palace={getPalace(7)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(7)} onSelect={() => setSelectedCungIndex(7)} />
-        <PalaceComponent palace={getPalace(8)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(8)} onSelect={() => setSelectedCungIndex(8)} />
+        {renderBoardPalace(5)}
+        {renderBoardPalace(6)}
+        {renderBoardPalace(7)}
+        {renderBoardPalace(8)}
 
         {/* Row 2: Thìn + center + Dậu */}
-        <PalaceComponent palace={getPalace(4)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(4)} onSelect={() => setSelectedCungIndex(4)} />
+        {renderBoardPalace(4)}
         <div className="feng-medallion col-span-2 row-span-2 flex flex-col items-center justify-center rounded-[1.35rem] p-3 text-center md:p-4">
           <span className="feng-kicker !bg-amber-900/6 !text-amber-900 !shadow-none">Trung tâm lá số</span>
           <h3 className="mt-3 font-serif text-base font-bold text-amber-950 md:text-lg">Tứ Hóa Phái</h3>
@@ -1744,15 +2413,25 @@ export function TuViBoard({ chart }: Props) {
             <p><span className="font-semibold text-blue-700">{chart.thanCung.label}:</span> {chart.thanCung.chi}</p>
             <p className="font-serif text-base font-bold text-amber-900 md:text-lg">{chart.menhCuc}</p>
           </div>
-          {selectedDaiVan !== null && (
+          {!isQuaiMode && selectedDaiVan !== null && (
             <p className="mt-3 rounded-full bg-amber-100/80 px-3 py-1 text-xs font-semibold text-amber-900 ring-1 ring-amber-200 md:text-sm">
               Đang xem Đại Vận {selectedDaiVan}
             </p>
           )}
-          {yearInfo && (
+          {!isQuaiMode && yearInfo && (
             <p className="mt-2 rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-800 ring-1 ring-rose-200 md:text-sm">
               Đang xem năm {selectedYear}: Mệnh năm {palaces[yearInfo.chiIndex].name}
             </p>
+          )}
+          {isQuaiMode && quaiInfo && (
+            <>
+              <p className="mt-3 rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-800 ring-1 ring-rose-200 md:text-sm">
+                Mệnh quái tại {palaces[quaiInfo.chiIndex].chi} · {getQuaiDisplayName(quaiInfo.chiIndex)}
+              </p>
+              <p className="mt-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 md:text-sm">
+                Người B: {quaiBirthYear} ({quaiInfo.can} {quaiInfo.chi})
+              </p>
+            </>
           )}
           {selectedCungIndex !== null && (
             <p className="mt-2 text-[10px] md:text-xs text-slate-500">
@@ -1760,30 +2439,32 @@ export function TuViBoard({ chart }: Props) {
             </p>
           )}
         </div>
-        <PalaceComponent palace={getPalace(9)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(9)} onSelect={() => setSelectedCungIndex(9)} />
+        {renderBoardPalace(9)}
 
         {/* Row 3: Mão + center + Tuất */}
-        <PalaceComponent palace={getPalace(3)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(3)} onSelect={() => setSelectedCungIndex(3)} />
-        <PalaceComponent palace={getPalace(10)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(10)} onSelect={() => setSelectedCungIndex(10)} />
+        {renderBoardPalace(3)}
+        {renderBoardPalace(10)}
 
         {/* Row 4: Dần -> Hợi (Tý Sửu ở giữa dưới) */}
-        <PalaceComponent palace={getPalace(2)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(2)} onSelect={() => setSelectedCungIndex(2)} />
-        <PalaceComponent palace={getPalace(1)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(1)} onSelect={() => setSelectedCungIndex(1)} />
-        <PalaceComponent palace={getPalace(0)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(0)} onSelect={() => setSelectedCungIndex(0)} />
-        <PalaceComponent palace={getPalace(11)} daiVanCungIndex={selectedDaiVanCungIndex} locKyMap={activeLocKy} daiVanLocKyMap={daiVanLocKy} affectedDaiVan={affectedDaiVan} yearCanMap={yearInfo?.yearCanMap ?? null} activeMenhIndex={activeMenhIndex} yearRoleName={getYearRoleName?.(11)} onSelect={() => setSelectedCungIndex(11)} />
+        {renderBoardPalace(2)}
+        {renderBoardPalace(1)}
+        {renderBoardPalace(0)}
+        {renderBoardPalace(11)}
       </div>
 
       <div className="mx-auto mt-5 grid max-w-5xl gap-4 xl:grid-cols-2">
-        {selectedCungIndex !== null && detailLocKy && renderLocKyOverviewCard(
+        {selectedCungIndex !== null && displayDetailLocKy && renderLocKyOverviewCard(
           `${activeLayerLabel} của ${selectedRoleName ?? getCungDisplayName(selectedCungIndex)}`,
-          `Ba tầng Lộc/Kỵ chính đang tác động trực tiếp từ cung được chọn${selectedRoleCan ? ` (${selectedRoleCan})` : ''}.`,
-          detailLocKy,
-          (index) => getCungDisplayName(index),
+          isQuaiMode
+            ? `Lộc/Kỵ của cung quái đang chọn được an theo can quái; phần mở rộng vẫn bám theo can gốc của lá số A.`
+            : `Ba tầng Lộc/Kỵ chính đang tác động trực tiếp từ cung được chọn${selectedRoleCan ? ` (${selectedRoleCan})` : ''}.`,
+          displayDetailLocKy,
+          (index) => isQuaiMode ? getQuaiDisplayName(index) : getCungDisplayName(index),
           'L',
           'K',
           badKyLabels
         )}
-        {selectedDaiVanCungIndex !== null && daiVanLocKy && renderLocKyOverviewCard(
+        {!isQuaiMode && selectedDaiVanCungIndex !== null && daiVanLocKy && renderLocKyOverviewCard(
           `Lộc/Kỵ của Đại Vận ${selectedDaiVan ?? currentDaiVan}`,
           `Tóm tắt các vị trí LĐV/KĐV của Mệnh Vận ${palaces[selectedDaiVanCungIndex].name}.`,
           daiVanLocKy,
@@ -1794,7 +2475,257 @@ export function TuViBoard({ chart }: Props) {
       </div>
       </div>
 
-      {selectedCungIndex !== null && (
+      {isQuaiMode && (
+        <div className="mx-auto mt-4 max-w-5xl space-y-4">
+          {!quaiInfo && (
+            <div className="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm md:p-5">
+              <h4 className="text-sm font-bold text-amber-900 md:text-base font-serif">Nhập Quái</h4>
+              <p className="mt-1 text-xs leading-relaxed text-gray-600 md:text-sm">
+                Nhập năm sinh của người B để an hệ quái chồng lên lá số A. Sau đó click một cung để xem Lộc/Kỵ quái và đối chiếu hai chiều giữa quái với Tiên thiên, Đại Vận và Năm của A.
+              </p>
+            </div>
+          )}
+
+          {selectedCungIndex !== null && quaiInfo && quaiAnalysis && (
+            <>
+              <div className="grid gap-4 xl:grid-cols-2">
+                <div className="rounded-2xl border border-sky-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="text-sm font-bold text-sky-900 md:text-base font-serif">Quái → Lá số A</h4>
+                      <p className="mt-1 text-xs leading-relaxed text-gray-600 md:text-sm">
+                        Lộc/Kỵ của <span className="font-semibold text-slate-900">{quaiAnalysis.roleLabel}</span> tác động vào Mệnh quái, chính cung quái và 3 tầng của lá số A.
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-800 ring-1 ring-sky-200">
+                      Can quái: {selectedRoleCan}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-[11px] font-medium text-gray-600">3 tác động chính</p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {quaiAnalysis.forwardSummary.length > 0 ? (
+                        quaiAnalysis.forwardSummary.map((impact, index) => (
+                          <span
+                            key={`quai-forward-summary-${index}`}
+                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ${
+                              impact.neutral
+                                ? 'bg-gray-50 text-gray-700 ring-gray-200'
+                                : impact.positive
+                                  ? 'bg-blue-50 text-blue-700 ring-blue-200'
+                                  : 'bg-red-50 text-red-700 ring-red-200'
+                            }`}
+                          >
+                            {impact.neutral ? '•' : impact.positive ? '+' : '-'} {impact.target}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[11px] text-gray-500">Chưa có tương tác trọng yếu.</span>
+                      )}
+                    </div>
+                  </div>
+                  <details className="mt-3 rounded-lg border border-sky-100 bg-sky-50/40">
+                    <summary className="cursor-pointer list-none px-3 py-2 text-[11px] font-semibold text-sky-800 md:text-xs">
+                      Xem chi tiết Quái → Lá số A
+                    </summary>
+                    <div className="border-t border-sky-100 px-3 py-2 space-y-1">
+                      {renderImpactLegend()}
+                      {quaiAnalysis.forward.length > 0 ? (
+                        renderYearImpactGroups(quaiAnalysis.forward, 'quai-forward')
+                      ) : (
+                        <p className="text-[11px] md:text-xs text-gray-500">Không có chi tiết phát sinh.</p>
+                      )}
+                    </div>
+                  </details>
+                </div>
+
+                <div className="rounded-2xl border border-violet-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="text-sm font-bold text-violet-900 md:text-base font-serif">Lá số A → Quái</h4>
+                      <p className="mt-1 text-xs leading-relaxed text-gray-600 md:text-sm">
+                        Lộc/Kỵ của cùng vai trò bên lá số A đi ngược lại để xem ảnh hưởng lên Mệnh quái và <span className="font-semibold text-slate-900">{quaiAnalysis.roleLabel}</span>.
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-800 ring-1 ring-violet-200">
+                      Mở rộng dùng can gốc của A
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-[11px] font-medium text-gray-600">3 tác động chính</p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {quaiAnalysis.backwardSummary.length > 0 ? (
+                        quaiAnalysis.backwardSummary.map((impact, index) => (
+                          <span
+                            key={`quai-backward-summary-${index}`}
+                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ${
+                              impact.neutral
+                                ? 'bg-gray-50 text-gray-700 ring-gray-200'
+                                : impact.positive
+                                  ? 'bg-blue-50 text-blue-700 ring-blue-200'
+                                  : 'bg-red-50 text-red-700 ring-red-200'
+                            }`}
+                          >
+                            {impact.neutral ? '•' : impact.positive ? '+' : '-'} {impact.target}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[11px] text-gray-500">Chưa có tương tác trọng yếu.</span>
+                      )}
+                    </div>
+                  </div>
+                  <details className="mt-3 rounded-lg border border-violet-100 bg-violet-50/40">
+                    <summary className="cursor-pointer list-none px-3 py-2 text-[11px] font-semibold text-violet-800 md:text-xs">
+                      Xem chi tiết Lá số A → Quái
+                    </summary>
+                    <div className="border-t border-violet-100 px-3 py-2 space-y-1">
+                      {renderImpactLegend()}
+                      {quaiAnalysis.backward.length > 0 ? (
+                        renderYearImpactGroups(quaiAnalysis.backward, 'quai-backward')
+                      ) : (
+                        <p className="text-[11px] md:text-xs text-gray-500">Không có chi tiết phát sinh.</p>
+                      )}
+                    </div>
+                  </details>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <h4 className="text-sm font-bold text-slate-900 md:text-base font-serif">Nguyên tắc đang áp dụng</h4>
+                <ul className="mt-3 space-y-1.5 text-xs leading-relaxed text-gray-700 md:text-sm">
+                  <li>Mệnh quái đặt theo địa chi năm sinh của người B.</li>
+                  <li>12 cung quái được an lại từ Mệnh quái theo cùng thứ tự cung hiện tại.</li>
+                  <li>Can 12 cung quái được an bằng Ngũ Hổ Độn theo thiên can năm sinh của người B.</li>
+                  <li>L1-L3 và K1-K3 của quái dùng can quái; Lộc/Kỵ mở rộng vẫn dùng can gốc của lá số A.</li>
+                  <li>Khi đối chiếu với A, hệ thống xét đủ Tiên thiên, Đại Vận và Năm theo context đang chọn trong tab này.</li>
+                </ul>
+              </div>
+
+              {showQuaiYearRanking && quaiYearRanking && quaiYearRanking.length > 0 && (
+                <div className="rounded-2xl border border-violet-200 bg-white p-4 shadow-sm md:p-5">
+                  <h4 className="font-bold text-violet-900 mb-3 text-base md:text-lg font-serif">
+                    Năm tốt & xấu cho {quaiAnalysis.roleLabel}
+                  </h4>
+                  <p className="text-xs md:text-sm text-gray-600 mb-4 leading-relaxed">
+                    Mỗi năm được chấm theo 2 điểm trọng yếu của lá số A: <strong>Mệnh năm</strong> và <strong>{quaiRoleName} năm</strong>.
+                    Điểm tăng hoặc giảm mạnh hơn khi năm gốc của A và quái cùng chạm vào các điểm này; nếu Đại Vận cũng chiếu vào thì độ mạnh được cộng thêm.
+                  </p>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <h5 className="font-bold text-emerald-800 mb-2 text-sm md:text-base font-serif">Năm tốt nhất</h5>
+                      <div className="space-y-2">
+                        {quaiYearRanking.slice(0, 5).map((item) => {
+                          const level = getLevelLabel(item.level);
+                          const topImpacts = summarizeYearImpacts(item.details);
+                          return (
+                            <div key={`quai-good-${item.year}`} className="rounded-lg border border-emerald-200 bg-white/80 p-2.5 shadow-sm">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-bold text-sm md:text-base text-gray-900">
+                                  Năm {item.year} ({item.can} {item.chi})
+                                </span>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-md ring-1 ${level.color}`}>
+                                  {level.text} · {item.score > 0 ? '+' : ''}{item.score}
+                                </span>
+                              </div>
+                              <p className="text-[11px] md:text-xs text-gray-500 mb-1">Tuổi âm: {item.age}</p>
+                              {topImpacts.length > 0 && (
+                                <div className="mb-2">
+                                  <p className="text-[11px] md:text-xs font-medium text-gray-600">3 tác động chính</p>
+                                  <div className="mt-1 flex flex-wrap gap-1.5">
+                                    {topImpacts.map((impact, index) => (
+                                      <span
+                                        key={`quai-good-summary-${item.year}-${index}`}
+                                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ${
+                                          impact.neutral
+                                            ? 'bg-gray-50 text-gray-700 ring-gray-200'
+                                            : impact.positive
+                                              ? 'bg-blue-50 text-blue-700 ring-blue-200'
+                                              : 'bg-red-50 text-red-700 ring-red-200'
+                                        }`}
+                                      >
+                                        {impact.neutral ? '•' : impact.positive ? '+' : '-'} {impact.target}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              <details className="rounded-lg border border-emerald-100 bg-emerald-50/40">
+                                <summary className="cursor-pointer list-none px-3 py-2 text-[11px] font-semibold text-emerald-800 md:text-xs">
+                                  Xem chi tiết
+                                </summary>
+                                <div className="border-t border-emerald-100 px-3 py-2 space-y-1">
+                                  {renderImpactLegend()}
+                                  {renderYearImpactGroups(item.details, `quai-good-detail-${item.year}`)}
+                                </div>
+                              </details>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 className="font-bold text-red-800 mb-2 text-sm md:text-base font-serif">Năm xấu nhất</h5>
+                      <div className="space-y-2">
+                        {[...quaiYearRanking].reverse().slice(0, 5).map((item) => {
+                          const level = getLevelLabel(item.level);
+                          const topImpacts = summarizeYearImpacts(item.details);
+                          return (
+                            <div key={`quai-bad-${item.year}`} className="rounded-lg border border-red-200 bg-white/80 p-2.5 shadow-sm">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-bold text-sm md:text-base text-gray-900">
+                                  Năm {item.year} ({item.can} {item.chi})
+                                </span>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-md ring-1 ${level.color}`}>
+                                  {level.text} · {item.score > 0 ? '+' : ''}{item.score}
+                                </span>
+                              </div>
+                              <p className="text-[11px] md:text-xs text-gray-500 mb-1">Tuổi âm: {item.age}</p>
+                              {topImpacts.length > 0 && (
+                                <div className="mb-2">
+                                  <p className="text-[11px] md:text-xs font-medium text-gray-600">3 tác động chính</p>
+                                  <div className="mt-1 flex flex-wrap gap-1.5">
+                                    {topImpacts.map((impact, index) => (
+                                      <span
+                                        key={`quai-bad-summary-${item.year}-${index}`}
+                                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ${
+                                          impact.neutral
+                                            ? 'bg-gray-50 text-gray-700 ring-gray-200'
+                                            : impact.positive
+                                              ? 'bg-blue-50 text-blue-700 ring-blue-200'
+                                              : 'bg-red-50 text-red-700 ring-red-200'
+                                        }`}
+                                      >
+                                        {impact.neutral ? '•' : impact.positive ? '+' : '-'} {impact.target}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              <details className="rounded-lg border border-red-100 bg-red-50/30">
+                                <summary className="cursor-pointer list-none px-3 py-2 text-[11px] font-semibold text-red-800 md:text-xs">
+                                  Xem chi tiết
+                                </summary>
+                                <div className="border-t border-red-100 px-3 py-2 space-y-1">
+                                  {renderImpactLegend()}
+                                  {renderYearImpactGroups(item.details, `quai-bad-detail-${item.year}`)}
+                                </div>
+                              </details>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {selectedCungIndex !== null && !isQuaiMode && (
         <details className="mx-auto mt-4 max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <summary className="cursor-pointer list-none bg-slate-50/90 p-4 md:p-5">
             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
@@ -1811,31 +2742,31 @@ export function TuViBoard({ chart }: Props) {
           </summary>
           <div className="space-y-4 border-t border-slate-100 p-4 md:p-5">
 
-      {(ketLuan.tienThien.length > 0 || ketLuan.daiVan.length > 0 || (selectedYear !== null && ketLuan.nam.length > 0)) && (
+      {(visibleKetLuan.tienThien.length > 0 || visibleKetLuan.daiVan.length > 0 || visibleKetLuan.nam.length > 0) && (
         <div className="max-w-4xl mx-auto mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs md:text-sm">
           <h4 className="font-bold text-emerald-900 mb-2">Đối chiếu theo từng tầng</h4>
           <div className="mb-2">
             {renderImpactLegend()}
           </div>
 
-          {ketLuan.tienThien.length > 0 && (
+          {visibleKetLuan.tienThien.length > 0 && (
             <div className="mt-2">
               <p className="font-semibold text-emerald-800 mb-1">Tiên thiên</p>
-              {renderKetLuanItems(ketLuan.tienThien)}
+              {renderKetLuanItems(visibleKetLuan.tienThien)}
             </div>
           )}
 
-          {ketLuan.daiVan.length > 0 && (
+          {visibleKetLuan.daiVan.length > 0 && (
             <div className="mt-3">
               <p className="font-semibold text-emerald-800 mb-1">Đại Vận</p>
-              {renderKetLuanItems(ketLuan.daiVan)}
+              {renderKetLuanItems(visibleKetLuan.daiVan)}
             </div>
           )}
 
-          {selectedYear !== null && ketLuan.nam.length > 0 && (
+          {visibleKetLuan.nam.length > 0 && (
             <div className="mt-3">
               <p className="font-semibold text-emerald-800 mb-1">Năm</p>
-              {renderKetLuanItems(ketLuan.nam)}
+              {renderKetLuanItems(visibleKetLuan.nam)}
             </div>
           )}
         </div>
@@ -2199,9 +3130,9 @@ export function TuViBoard({ chart }: Props) {
               );
             };
 
-            const hasTienThien = ketLuan.tienThien.length > 0;
-            const hasDaiVan = ketLuan.daiVan.length > 0;
-            const hasNam = ketLuan.nam.length > 0;
+            const hasTienThien = visibleKetLuan.tienThien.length > 0;
+            const hasDaiVan = visibleKetLuan.daiVan.length > 0;
+            const hasNam = visibleKetLuan.nam.length > 0;
 
             if (!hasTienThien && !hasDaiVan && !hasNam) {
               return <p className="text-gray-600">Không có Lộc/Kỵ nào xung vào các cung trọng yếu.</p>;
@@ -2212,21 +3143,21 @@ export function TuViBoard({ chart }: Props) {
                 {hasTienThien && (
                   <div>
                     <h5 className="font-bold text-emerald-800 mb-2 text-sm md:text-base font-serif">Tiên thiên</h5>
-                    {renderItems(ketLuan.tienThien)}
+                    {renderItems(visibleKetLuan.tienThien)}
                   </div>
                 )}
 
                 {hasDaiVan && (
                   <div>
                     <h5 className="font-bold text-emerald-800 mb-2 text-sm md:text-base font-serif">Đại Vận</h5>
-                    {renderItems(ketLuan.daiVan)}
+                    {renderItems(visibleKetLuan.daiVan)}
                   </div>
                 )}
 
-                {selectedYear !== null && hasNam && (
+                {hasNam && (
                   <div>
                     <h5 className="font-bold text-emerald-800 mb-2 text-sm md:text-base font-serif">Năm</h5>
-                    {renderItems(ketLuan.nam)}
+                    {renderItems(visibleKetLuan.nam)}
                   </div>
                 )}
               </div>
@@ -2494,7 +3425,9 @@ export function TuViBoard({ chart }: Props) {
       )}
 
       <p className="mt-4 text-center text-[10px] text-gray-400 md:text-xs">
-        Tên cung đỏ = Mệnh gốc · xanh = Thân · tím = Mệnh + Thân · cam = Mệnh Đại Vận · hồng = Mệnh năm · click cung để xem Lộc/Kỵ
+        {isQuaiMode
+          ? 'Tên cung đỏ = Mệnh gốc · xanh = Thân · tím = Mệnh + Thân · hồng = Mệnh quái · click cung để xem Lộc/Kỵ quái'
+          : 'Tên cung đỏ = Mệnh gốc · xanh = Thân · tím = Mệnh + Thân · cam = Mệnh Đại Vận · hồng = Mệnh năm · click cung để xem Lộc/Kỵ'}
       </p>
     </div>
   );

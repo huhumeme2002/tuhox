@@ -1,7 +1,7 @@
 import type { BirthInput, Palace, TuViChart } from '../types/tuVi';
 import { CAN, CHI, CUNG_NAMES } from '../data/constants';
 import { convertSolarToLunar } from './calendar';
-import { getDayCanChi, getHourCanChi, getMonthCanChi, getYearCanChi, hourToChi } from './canChi';
+import { getDayCanChi, getHourCanChi, getMonthCanChi, getNguHoDonCanMap, getYearCanChi, hourToChi } from './canChi';
 import {
   calculateDaiVan,
   calculateMenhCungIndex,
@@ -57,17 +57,17 @@ export function buildChart(input: BirthInput): TuViChart {
   starsByPalace = applyTuHoa(yearCanChi.can, starsByPalace);
 
   // Xây dựng 12 cung
-  // An Thiên Can địa bàn theo quy tắc: cung Dần = Giáp, đếm thuận theo chiều kim đồng hồ
+  // An Thiên Can địa bàn theo Ngũ Hổ Độn từ can năm sinh.
   const daiVan = calculateDaiVan(menhCungIndex, menhCucNumber, chiNam0, gender);
+  const palaceCanMap = getNguHoDonCanMap(yearCanChi.can);
 
   const palaces: Palace[] = CHI.map((chi, index) => {
     const cungIndex = (index - menhCungIndex + 12) % 12;
     const cungName = CUNG_NAMES[cungIndex];
-    const canCung0 = ((index - 2 + 12) % 12) % 10;
     return {
       index,
       name: cungName,
-      can: CAN[canCung0],
+      can: palaceCanMap[index],
       chi,
       isMenh: index === menhCungIndex,
       isThan: index === thanCungIndex,

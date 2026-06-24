@@ -11,6 +11,32 @@ export function getYearCanChi(lunarYear: number): { can: Can; chi: Chi } {
   };
 }
 
+const NGU_HO_DON_FIRST_MONTH_CAN: Record<Can, Can> = {
+  'Giáp': 'Bính',
+  'Kỷ': 'Bính',
+  'Ất': 'Mậu',
+  'Canh': 'Mậu',
+  'Bính': 'Canh',
+  'Tân': 'Canh',
+  'Đinh': 'Nhâm',
+  'Nhâm': 'Nhâm',
+  'Mậu': 'Giáp',
+  'Quý': 'Giáp',
+};
+
+export function getNguHoDonCanMap(yearCan: Can): Record<number, Can> {
+  const canDau = NGU_HO_DON_FIRST_MONTH_CAN[yearCan];
+  const canIndex = CAN.indexOf(canDau);
+  const map: Record<number, Can> = {};
+
+  for (let i = 0; i < 12; i++) {
+    // Dần (index 2) là can khởi; sau đó đếm thuận theo 12 địa chi.
+    map[i] = CAN[(canIndex + (i - 2 + 12) % 12) % 10];
+  }
+
+  return map;
+}
+
 export function getMonthCanChi(lunarYear: number, lunarMonth: number): { can: Can; chi: Chi } {
   const yearCanIndex = (lunarYear - 4) % 10;
   // Tháng Giêng (tháng 1 âm) của năm Giáp/Kỷ là Giáp Dần
@@ -20,19 +46,7 @@ export function getMonthCanChi(lunarYear: number, lunarMonth: number): { can: Ca
   // 丙辛之年寻庚上 (Bính/Tân -> Canh)
   // 丁壬壬位顺行流 (Đinh/Nhâm -> Nhâm)
   // 戊癸甲寅好追求 (Mậu/Quý -> Giáp)
-  const firstMonthCanMap: Record<number, number> = {
-    0: 2, // Giáp -> Bính
-    5: 2, // Kỷ -> Bính
-    1: 4, // Ất -> Mậu
-    6: 4, // Canh -> Mậu
-    2: 6, // Bính -> Canh
-    7: 6, // Tân -> Canh
-    3: 8, // Đinh -> Nhâm
-    8: 8, // Nhâm -> Nhâm
-    4: 0, // Mậu -> Giáp
-    9: 0, // Quý -> Giáp
-  };
-  const firstMonthCan = firstMonthCanMap[yearCanIndex];
+  const firstMonthCan = CAN.indexOf(NGU_HO_DON_FIRST_MONTH_CAN[CAN[yearCanIndex]]);
   const canIndex = (firstMonthCan + (lunarMonth - 1)) % 10;
   const chiIndex = ((lunarMonth + 1) % 12); // tháng 1 -> Dần (index 2)
   return {
