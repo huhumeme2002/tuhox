@@ -9,6 +9,21 @@ function pad(n: number) {
   return n.toString().padStart(2, '0');
 }
 
+const BIRTH_TIME_OPTIONS = [
+  { label: 'Tý (23-01h)', value: '00:30' },
+  { label: 'Sửu (01-03h)', value: '01:30' },
+  { label: 'Dần (03-05h)', value: '03:30' },
+  { label: 'Mão (05-07h)', value: '05:30' },
+  { label: 'Thìn (07-09h)', value: '07:30' },
+  { label: 'Tỵ (09-11h)', value: '09:30' },
+  { label: 'Ngọ (11-13h)', value: '11:30' },
+  { label: 'Mùi (13-15h)', value: '13:30' },
+  { label: 'Thân (15-17h)', value: '15:30' },
+  { label: 'Dậu (17-19h)', value: '17:30' },
+  { label: 'Tuất (19-21h)', value: '19:30' },
+  { label: 'Hợi (21-23h)', value: '21:30' },
+] as const;
+
 export function BirthForm({ onSubmit }: Props) {
   const [name, setName] = useState('');
   const [day, setDay] = useState(26);
@@ -17,43 +32,53 @@ export function BirthForm({ onSubmit }: Props) {
   const [birthTime, setBirthTime] = useState('11:30');
   const [gender, setGender] = useState<'Nam' | 'Nữ'>('Nữ');
 
-  const days = useMemo(() => {
-    const maxDay = new Date(year, month, 0).getDate();
-    return Array.from({ length: maxDay }, (_, i) => i + 1);
-  }, [year, month]);
+  const maxDay = useMemo(() => new Date(year, month, 0).getDate(), [year, month]);
+  const days = useMemo(() => Array.from({ length: maxDay }, (_, i) => i + 1), [maxDay]);
+  const safeDay = Math.min(day, maxDay);
 
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const fieldClass = 'feng-input w-full rounded-xl px-3 py-2.5 text-sm text-slate-900';
+  const compactFieldClass = 'feng-input w-full rounded-xl px-2.5 py-2.5 text-sm text-slate-900';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const birthDate = `${year}-${pad(month)}-${pad(day)}`;
+    const birthDate = `${year}-${pad(month)}-${pad(safeDay)}`;
     onSubmit({ name, birthDate, birthTime, gender });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-5 rounded-xl shadow-md border border-amber-100">
-      <h2 className="text-lg font-semibold mb-4 text-amber-900 flex items-center gap-2 font-serif">
-        <span>🌙</span> Nhập thông tin sinh
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <form onSubmit={handleSubmit} className="feng-shell rounded-[1.35rem] p-5 md:p-6">
+      <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div className="space-y-2">
+          <span className="feng-kicker">Thông tin khai lá số</span>
+          <div>
+            <h2 className="font-serif text-xl font-semibold text-amber-950 md:text-2xl">Nhập thông tin sinh</h2>
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-amber-900/70">
+              Chọn ngày giờ theo định dạng quen thuộc để lập lá số và chuyển ngay sang phần phân tích.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <div className="md:col-span-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Họ tên</label>
+          <label className="mb-1.5 block text-sm font-medium text-amber-950">Họ tên</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border border-amber-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white/80 transition-all hover:border-amber-300"
+            className={fieldClass}
             placeholder="Nhập họ tên"
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Ngày sinh (dương lịch)</label>
+          <label className="mb-1.5 block text-sm font-medium text-amber-950">Ngày sinh (dương lịch)</label>
           <div className="grid grid-cols-3 gap-2">
             <select
-              value={day}
+              value={safeDay}
               onChange={(e) => setDay(Number(e.target.value))}
-              className="w-full border border-amber-200 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white/80 transition-all hover:border-amber-300"
+              className={compactFieldClass}
               required
             >
               <option value="" disabled>Ngày</option>
@@ -64,7 +89,7 @@ export function BirthForm({ onSubmit }: Props) {
             <select
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
-              className="w-full border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+              className={compactFieldClass}
               required
             >
               <option value="" disabled>Tháng</option>
@@ -78,7 +103,7 @@ export function BirthForm({ onSubmit }: Props) {
               max={2100}
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="w-full border border-amber-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white/80 transition-all hover:border-amber-300"
+              className={fieldClass}
               placeholder="Năm"
               required
             />
@@ -86,32 +111,37 @@ export function BirthForm({ onSubmit }: Props) {
         </div>
 
         <div className="md:col-span-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Giờ sinh</label>
-          <input
-            type="time"
+          <label className="mb-1.5 block text-sm font-medium text-amber-950">Giờ sinh</label>
+          <select
             value={birthTime}
             onChange={(e) => setBirthTime(e.target.value)}
-            className="w-full border border-amber-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white/80 transition-all hover:border-amber-300"
+            className={fieldClass}
             required
-          />
+          >
+            {BIRTH_TIME_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="md:col-span-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Giới tính</label>
+          <label className="mb-1.5 block text-sm font-medium text-amber-950">Giới tính</label>
           <select
             value={gender}
             onChange={(e) => setGender(e.target.value as 'Nam' | 'Nữ')}
-            className="w-full border border-amber-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white/80 transition-all hover:border-amber-300"
+            className={fieldClass}
           >
             <option value="Nam">Nam</option>
             <option value="Nữ">Nữ</option>
           </select>
         </div>
 
-        <div className="md:col-span-3">
+        <div className="md:col-span-3 flex items-end">
           <button
             type="submit"
-            className="w-full md:w-auto bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-white py-2.5 px-8 rounded-lg transition-all font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5"
+            className="feng-button-primary w-full rounded-xl px-8 py-2.5 font-semibold md:w-auto"
           >
             Lập lá số
           </button>

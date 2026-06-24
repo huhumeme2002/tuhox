@@ -4,19 +4,28 @@
   font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: light dark;
-  color: #213547;
-  background-color: #ffffff;
+  color-scheme: light;
+  color: #2f2418;
+  background-color: #f6efe4;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  background: #f6efe4;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  color: #2f2418;
+  background:
+    radial-gradient(circle at top, rgba(217, 119, 6, 0.14), transparent 28%),
+    linear-gradient(180deg, #fbf6ef 0%, #f4eadc 52%, #f8f2e9 100%);
+  position: relative;
 }
 
 #root {
@@ -24,23 +33,296 @@ body {
   min-height: 100vh;
 }
 
-/* Font serif cho tiêu đề và tên cung */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+body::before {
+  opacity: 0.34;
+  background-image:
+    repeating-radial-gradient(circle at center, rgba(180, 83, 9, 0.14) 0 1px, transparent 1px 56px),
+    radial-gradient(circle at 18% 16%, rgba(146, 64, 14, 0.22) 0 1px, transparent 1px 26px),
+    radial-gradient(circle at 82% 22%, rgba(146, 64, 14, 0.2) 0 1px, transparent 1px 22px),
+    radial-gradient(circle at 72% 74%, rgba(180, 83, 9, 0.18) 0 1px, transparent 1px 18px),
+    linear-gradient(45deg, transparent 49.2%, rgba(180, 83, 9, 0.08) 49.6%, transparent 50%);
+  background-size: 680px 680px, 180px 180px, 220px 220px, 160px 160px, 240px 240px;
+  background-position: center -60px, left top, right 8% top 16%, right 12% bottom 14%, center;
+}
+
+body::after {
+  opacity: 0.58;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(245, 158, 11, 0.1), transparent 18%),
+    radial-gradient(circle at 88% 16%, rgba(180, 83, 9, 0.09), transparent 16%),
+    radial-gradient(circle at 78% 82%, rgba(120, 53, 15, 0.08), transparent 20%);
+}
+
 .font-serif {
   font-family: 'Noto Serif', 'Georgia', serif;
 }
 
-/* Custom scrollbar */
+.feng-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(120, 53, 15, 0.24);
+  background:
+    linear-gradient(180deg, rgba(255, 251, 245, 0.96), rgba(249, 241, 228, 0.96)),
+    radial-gradient(circle at top, rgba(245, 158, 11, 0.08), transparent 26%);
+  box-shadow:
+    0 30px 65px rgba(120, 53, 15, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+}
+
+.feng-shell::before,
+.feng-panel::before,
+.palace-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.feng-panel::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.85), transparent);
+}
+
+.feng-shell::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.64), transparent 34%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 30%);
+}
+
+.feng-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(120, 53, 15, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(247, 239, 227, 0.92)),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent 22%);
+  box-shadow:
+    0 18px 38px rgba(120, 53, 15, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.feng-panel::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.54), transparent 40%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.11), transparent 26%);
+}
+
+.feng-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  background:
+    radial-gradient(circle at top, rgba(251, 191, 36, 0.22), transparent 34%),
+    linear-gradient(135deg, rgba(104, 47, 9, 0.96), rgba(120, 53, 15, 0.96) 42%, rgba(146, 64, 14, 0.96));
+  box-shadow:
+    0 28px 68px rgba(120, 53, 15, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(14px);
+}
+
+.feng-hero::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(251, 191, 36, 0.26);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at center, rgba(251, 191, 36, 0.08), transparent 36%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 50%);
+  pointer-events: none;
+}
+
+.feng-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(251, 191, 36, 0.24);
+  background: rgba(255, 251, 245, 0.14);
+  padding: 0.45rem 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fef3c7;
+  box-shadow: 0 10px 24px rgba(120, 53, 15, 0.18);
+  backdrop-filter: blur(10px);
+}
+
+.feng-kicker::before,
+.feng-kicker::after {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #f59e0b, #b45309);
+  opacity: 0.7;
+}
+
+.feng-divider {
+  height: 1px;
+  width: min(240px, 100%);
+  margin-inline: auto;
+  background: linear-gradient(90deg, transparent, rgba(253, 230, 138, 0.1), rgba(251, 191, 36, 0.85), rgba(253, 230, 138, 0.1), transparent);
+}
+
+.feng-input {
+  border: 1px solid rgba(180, 83, 9, 0.18);
+  background: rgba(255, 252, 247, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 8px 18px rgba(120, 53, 15, 0.04);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.feng-input:hover {
+  border-color: rgba(180, 83, 9, 0.3);
+}
+
+.feng-input:focus {
+  outline: none;
+  border-color: rgba(217, 119, 6, 0.55);
+  background: rgba(255, 253, 249, 0.98);
+  box-shadow:
+    0 0 0 3px rgba(245, 158, 11, 0.18),
+    0 12px 24px rgba(120, 53, 15, 0.08);
+}
+
+.feng-button-primary {
+  border: 1px solid rgba(146, 64, 14, 0.36);
+  background: linear-gradient(135deg, #a16207, #b45309 52%, #d97706);
+  color: #fffdf8;
+  box-shadow:
+    0 14px 28px rgba(146, 64, 14, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.feng-button-primary:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.02);
+  box-shadow:
+    0 18px 34px rgba(146, 64, 14, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.palace-card {
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 251, 242, 0.98), rgba(248, 239, 224, 0.9)),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent 28%);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 20px 34px rgba(120, 53, 15, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.palace-card::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.54), transparent 38%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent 28%);
+}
+
+.palace-card::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(180, 83, 9, 0.14);
+  pointer-events: none;
+}
+
+.feng-board {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(120, 53, 15, 0.26);
+  background:
+    linear-gradient(180deg, rgba(120, 53, 15, 0.92), rgba(92, 42, 10, 0.94)),
+    radial-gradient(circle at center, rgba(251, 191, 36, 0.08), transparent 44%);
+  box-shadow:
+    0 28px 70px rgba(120, 53, 15, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.feng-board::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(251, 191, 36, 0.22);
+  border-radius: 1.1rem;
+  pointer-events: none;
+}
+
+.feng-board::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top, rgba(251, 191, 36, 0.1), transparent 24%),
+    repeating-linear-gradient(90deg, transparent 0 47px, rgba(251, 191, 36, 0.04) 47px 48px),
+    repeating-linear-gradient(0deg, transparent 0 47px, rgba(251, 191, 36, 0.04) 47px 48px);
+}
+
+.feng-medallion {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  background:
+    radial-gradient(circle at top, rgba(251, 191, 36, 0.18), transparent 32%),
+    linear-gradient(180deg, rgba(255, 249, 237, 0.98), rgba(247, 237, 217, 0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    0 18px 34px rgba(69, 26, 3, 0.18);
+}
+
+.feng-medallion::before {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border-radius: 1rem;
+  border: 1px solid rgba(180, 83, 9, 0.12);
+  pointer-events: none;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #f5f0e8;
+  background: #efe3d1;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #c4a882;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #d4a15d, #a66a2a);
+  border-radius: 9999px;
+  border: 2px solid #efe3d1;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #a68b6a;
+  background: linear-gradient(180deg, #c98b37, #8f541a);
 }

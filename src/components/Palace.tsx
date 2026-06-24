@@ -56,16 +56,16 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
   const daiVanKy = affectedDaiVan?.ky.some((x) => x.daiVan === daiVan);
 
   const borderClass = isDaiVanMenh
-    ? 'border-amber-500 bg-amber-50/90 ring-2 ring-amber-300/70 shadow-amber-200/50'
+    ? 'border-amber-500 bg-amber-50/92 ring-2 ring-amber-300/70 shadow-amber-200/50'
     : isMenh && isThan
-    ? 'border-purple-500 bg-purple-50/90 ring-2 ring-purple-300/70 shadow-purple-200/50'
+    ? 'border-purple-500 bg-purple-50/92 ring-2 ring-purple-300/70 shadow-purple-200/50'
     : isActiveMenh
-    ? 'border-rose-500 bg-rose-50/90 ring-2 ring-rose-300/70 shadow-rose-200/50'
+    ? 'border-rose-500 bg-rose-50/92 ring-2 ring-rose-300/70 shadow-rose-200/50'
     : isMenh
-    ? 'border-red-500 bg-red-50/90'
+    ? 'border-red-500 bg-red-50/92'
     : isThan
-    ? 'border-blue-500 bg-blue-50/90'
-    : 'border-amber-800/40 bg-amber-50/60';
+    ? 'border-blue-500 bg-blue-50/92'
+    : 'border-amber-900/25 bg-amber-50/72';
 
   const nameColor = isDaiVanMenh
     ? 'text-amber-800 font-serif'
@@ -83,11 +83,11 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
     <button
       type="button"
       onClick={onSelect}
-      className={`text-left border-2 ${borderClass} p-2 md:p-3 min-h-[180px] md:min-h-[220px] flex flex-col rounded-xl shadow-md hover:shadow-xl hover:border-amber-500/80 hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400 relative`}
+      className={`palace-card relative flex min-h-[188px] flex-col rounded-[1rem] border-2 p-2 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-500/80 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-amber-400 md:min-h-[228px] md:p-3 ${borderClass}`}
     >
       {/* Đại vận ở góc phải trên */}
       {daiVan !== undefined && (
-        <div className="absolute top-1.5 right-1.5">
+        <div className="absolute right-1.5 top-1.5 z-10">
           <span
             className={`text-xs md:text-sm font-bold px-2 py-0.5 rounded-lg shadow-sm ${
               daiVanLoc
@@ -103,8 +103,8 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
       )}
 
       {/* Header: tên cung + can chi */}
-      <div className="flex justify-end items-start border-b border-amber-300/60 pb-1 mb-2">
-        <div className="text-right leading-tight pr-7">
+      <div className="relative z-10 mb-2 flex items-start justify-end border-b border-amber-300/60 pb-1">
+        <div className="pr-7 text-right leading-tight">
           {yearRoleName ? (
             <div className={`font-bold text-xs md:text-sm ${nameColor}`}>{yearRoleName}</div>
           ) : daiVanName ? (
@@ -120,14 +120,14 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
 
       {/* Badge Mệnh Đại Vận / Mệnh năm */}
       {isDaiVanMenh && (
-        <div className="absolute top-1.5 left-1.5">
+        <div className="absolute left-1.5 top-1.5 z-10">
           <span className="text-[9px] md:text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 px-2 py-0.5 rounded-md shadow-sm ring-1 ring-amber-400/50">
             Mệnh Vận
           </span>
         </div>
       )}
       {isActiveMenh && !isMenh && (
-        <div className="absolute top-1.5 left-1.5">
+        <div className="absolute left-1.5 top-1.5 z-10">
           <span className="text-[9px] md:text-[10px] font-bold text-white bg-gradient-to-r from-rose-500 to-rose-600 px-2 py-0.5 rounded-md shadow-sm ring-1 ring-rose-400/50">
             Mệnh năm
           </span>
@@ -135,7 +135,7 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
       )}
 
       {/* Chính tinh */}
-          <div className="space-y-1.5 mb-2">
+      <div className="relative z-10 mb-2 space-y-1.5">
         {chinhTinh.map((star, idx) => (
           <div
             key={`chinh-${idx}`}
@@ -158,7 +158,7 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
 
       {/* Phụ tinh */}
       {phuTinh.length > 0 && (
-          <div className="mt-auto pt-2 border-t border-dashed border-amber-300/60">
+        <div className="relative z-10 mt-auto border-t border-dashed border-amber-300/60 pt-2">
           <div className="flex flex-wrap gap-x-2.5 gap-y-1">
             {phuTinh.map((star, idx) => (
               <span key={`phu-${idx}`} className="text-[11px] md:text-xs text-gray-600 leading-tight font-medium">
@@ -171,7 +171,7 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
 
       {/* Tứ Hóa (nếu sao phụ hóa) */}
       {tuHoaList.length > 0 && (
-        <div className="mt-1.5 pt-1.5 border-t border-dashed border-amber-300/50">
+        <div className="relative z-10 mt-1.5 border-t border-dashed border-amber-300/50 pt-1.5">
           <div className="flex flex-wrap gap-1">
             {tuHoaList.map((star, idx) => (
               <span
@@ -186,7 +186,7 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
       )}
 
       {/* Lộc/Kỵ tiên thiên + Đại Vận badges */}
-      <div className="absolute bottom-1.5 right-1.5 flex flex-wrap justify-end gap-1 max-w-[80%]">
+      <div className="absolute bottom-1.5 right-1.5 z-10 flex max-w-[80%] flex-wrap justify-end gap-1">
         {locLabel && (
           <span className="text-[10px] md:text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-0.5 rounded-lg shadow-md ring-1 ring-blue-300">
             {locLabel}

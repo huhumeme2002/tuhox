@@ -24,3 +24,7 @@ export function getLunarDateObject(dateStr: string) {
   const solar = Solar.fromYmd(year, month, day);
   return Lunar.fromSolar(solar);
 }
+
+export function getCurrentLunarYear(date = new Date()): number {
+  return Solar.fromDate(date).getLunar().getYear();
+}
