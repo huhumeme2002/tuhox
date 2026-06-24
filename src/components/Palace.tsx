@@ -101,7 +101,7 @@ export function Palace({
             : 'text-[var(--text-main)] font-serif';
 
   const selectedClass = isSelected
-    ? 'border-[rgba(243,210,122,0.72)] ring-4 ring-[rgba(139,92,246,0.28)] shadow-[0_0_34px_rgba(212,175,55,0.22)] scale-[1.02]'
+    ? 'z-20 border-[rgba(243,210,122,0.9)] ring-[6px] ring-[rgba(139,92,246,0.35)] shadow-[0_0_42px_rgba(212,175,55,0.32)] scale-[1.03]'
     : '';
 
   return (
@@ -127,16 +127,16 @@ export function Palace({
         </div>
       )}
 
-      <div className="relative z-10 mb-2 flex items-start justify-end border-b border-[rgba(243,210,122,0.16)] pb-1">
+      <div className="relative z-10 mb-2 flex items-start justify-end border-b border-[rgba(243,210,122,0.18)] pb-1.5">
         <div className="pr-7 text-right leading-tight">
           {yearRoleName ? (
-            <div className={`text-xs font-bold md:text-sm ${nameColor}`}>{yearRoleName}</div>
+            <div className={`text-sm font-bold md:text-base ${nameColor}`}>{yearRoleName}</div>
           ) : daiVanName ? (
-            <div className={`text-xs font-bold md:text-sm ${nameColor}`}>{daiVanName} Vận</div>
+            <div className={`text-sm font-bold md:text-base ${nameColor}`}>{daiVanName} Vận</div>
           ) : (
-            <div className={`text-xs font-bold md:text-sm ${nameColor}`}>{name}</div>
+            <div className={`text-sm font-bold md:text-base ${nameColor}`}>{name}</div>
           )}
-          <div className="text-[10px] font-medium tracking-wide text-[var(--text-muted)] md:text-xs">
+          <div className="text-xs font-semibold tracking-wide text-[var(--text-muted)] md:text-sm">
             {displayCan} {chi}
           </div>
         </div>
@@ -161,11 +161,11 @@ export function Palace({
         {chinhTinh.map((star, idx) => (
           <div
             key={`chinh-${idx}`}
-            className="flex items-center gap-2 font-serif text-sm font-bold leading-tight md:text-base"
+            className="flex items-center gap-2 font-serif text-sm font-extrabold leading-tight md:text-base"
             style={{ color: STAR_COLORS[star.name] || '#F8EFD2' }}
           >
-            <span className="h-2 w-2 flex-shrink-0 rounded-full bg-current opacity-90 shadow-sm" />
-            <span>
+            <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-current opacity-95 shadow-[0_0_8px_currentColor]" />
+            <span className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
               {star.quality === 1 ? '+' : star.quality === -1 ? '-' : ''}
               {star.name}
             </span>
@@ -179,10 +179,10 @@ export function Palace({
       </div>
 
       {phuTinh.length > 0 && (
-        <div className="relative z-10 mt-auto border-t border-dashed border-[rgba(243,210,122,0.12)] pt-2">
-          <div className="flex flex-wrap gap-x-2.5 gap-y-1">
+        <div className="relative z-10 mt-auto border-t border-dashed border-[rgba(243,210,122,0.14)] pt-2">
+          <div className="flex flex-wrap gap-x-2 gap-y-1">
             {phuTinh.map((star, idx) => (
-              <span key={`phu-${idx}`} className="text-[11px] font-medium leading-tight text-[var(--text-muted)] md:text-xs">
+              <span key={`phu-${idx}`} className="text-xs font-medium leading-tight text-[var(--text-muted)]/90 md:text-sm">
                 {star.name}
               </span>
             ))}

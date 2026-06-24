@@ -1770,7 +1770,7 @@ export function TuViBoard({ chart }: Props) {
     return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <h4 className="text-sm font-bold text-slate-900 md:text-base font-serif">{title}</h4>
-      <p className="mt-1 text-xs leading-relaxed text-gray-600 md:text-sm">{description}</p>
+      <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-muted)] md:text-sm">{description}</p>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Lộc</p>
@@ -2044,6 +2044,9 @@ export function TuViBoard({ chart }: Props) {
                         }}
                         className="feng-input w-full rounded-xl px-3 py-2 text-sm"
                       />
+                      <span className="mt-1 block text-[10px] text-[var(--text-muted)]/80 md:text-xs">
+                        Năm dương lịch của ngưới cần đối chiếu quái.
+                      </span>
                     </label>
                     <label className="block">
                       <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Đại Vận của A</span>
@@ -2059,6 +2062,9 @@ export function TuViBoard({ chart }: Props) {
                           </option>
                         ))}
                       </select>
+                      <span className="mt-1 block text-[10px] text-[var(--text-muted)]/80 md:text-xs">
+                        Chọn Đại Vận của A để xem quái chiếu theo vận.
+                      </span>
                     </label>
                     <label className="block">
                       <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--gold-soft)]/80">Năm của A</span>
@@ -2072,6 +2078,9 @@ export function TuViBoard({ chart }: Props) {
                         }}
                         className="feng-input w-full rounded-xl px-3 py-2 text-sm"
                       />
+                      <span className="mt-1 block text-[10px] text-[var(--text-muted)]/80 md:text-xs">
+                        Năm dương lịch muốn xem ảnh hưởng quái.
+                      </span>
                     </label>
                   </>
                 )}
@@ -2332,9 +2341,9 @@ export function TuViBoard({ chart }: Props) {
       {isQuaiMode && (
         <div className="mx-auto mt-4 max-w-5xl space-y-4">
           {!quaiInfo && (
-            <div className="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm md:p-5">
-              <h4 className="text-sm font-bold text-amber-900 md:text-base font-serif">Nhập Quái</h4>
-              <p className="mt-1 text-xs leading-relaxed text-gray-600 md:text-sm">
+            <div className="feng-panel rounded-[1.35rem] p-5 md:p-6">
+              <h4 className="font-serif text-base font-bold text-[var(--text-main)] md:text-lg">Nhập Quái</h4>
+              <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-muted)] md:text-sm">
                 Nhập năm sinh của người B để an hệ quái chồng lên lá số A. Sau đó click một cung để xem Lộc/Kỵ quái và đối chiếu hai chiều giữa quái với Tiên thiên, Đại Vận và Năm của A.
               </p>
             </div>
@@ -2347,7 +2356,7 @@ export function TuViBoard({ chart }: Props) {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h4 className="text-sm font-bold text-sky-900 md:text-base font-serif">Quái → Lá số A</h4>
-                      <p className="mt-1 text-xs leading-relaxed text-gray-600 md:text-sm">
+                      <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-muted)] md:text-sm">
                         Lộc/Kỵ của <span className="font-semibold text-slate-900">{quaiAnalysis.roleLabel}</span> tác động vào Mệnh quái, chính cung quái và 3 tầng của lá số A.
                       </p>
                     </div>
@@ -2397,7 +2406,7 @@ export function TuViBoard({ chart }: Props) {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h4 className="text-sm font-bold text-violet-900 md:text-base font-serif">Lá số A → Quái</h4>
-                      <p className="mt-1 text-xs leading-relaxed text-gray-600 md:text-sm">
+                      <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-muted)] md:text-sm">
                         Lộc/Kỵ của cùng vai trò bên lá số A đi ngược lại để xem ảnh hưởng lên Mệnh quái và <span className="font-semibold text-slate-900">{quaiAnalysis.roleLabel}</span>.
                       </p>
                     </div>
@@ -2585,7 +2594,7 @@ export function TuViBoard({ chart }: Props) {
             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
               <div>
                 <h4 className="text-sm font-bold text-slate-900 md:text-base font-serif">Phân tích chi tiết mở rộng</h4>
-                <p className="mt-1 text-xs leading-relaxed text-gray-600 md:text-sm">
+                <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-muted)] md:text-sm">
                   Giữ lại toàn bộ các lớp giải thích chi tiết, nhưng gom vào một khu riêng để phần đọc nhanh phía trên bớt rối.
                 </p>
               </div>
@@ -3278,11 +3287,26 @@ export function TuViBoard({ chart }: Props) {
         </div>
       )}
 
-      <p className="mt-4 text-center text-[10px] text-gray-400 md:text-xs">
-        {isQuaiMode
-          ? 'Tên cung đỏ = Mệnh gốc · xanh = Thân · tím = Mệnh + Thân · hồng = Mệnh quái · click cung để xem Lộc/Kỵ quái'
-          : 'Tên cung đỏ = Mệnh gốc · xanh = Thân · tím = Mệnh + Thân · cam = Mệnh Đại Vận · hồng = Mệnh năm · click cung để xem Lộc/Kỵ'}
-      </p>
+      <div className="mx-auto mt-5 flex max-w-5xl flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-[1rem] border border-[rgba(243,210,122,0.14)] bg-[rgba(15,23,42,0.6)] px-4 py-3 text-[10px] text-[var(--text-muted)] md:text-xs">
+        <span className="font-semibold text-[var(--gold-soft)]">Chú thích màu cung:</span>
+        {!isQuaiMode ? (
+          <>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-300 shadow-[0_0_8px_rgba(252,165,165,0.6)]" />Mệnh gốc</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-teal-300 shadow-[0_0_8px_rgba(45,212,191,0.5)]" />Thân</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-violet-300 shadow-[0_0_8px_rgba(167,139,250,0.5)]" />Mệnh + Thân</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.5)]" />Mệnh Đại Vận</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-rose-300 shadow-[0_0_8px_rgba(251,113,133,0.5)]" />Mệnh năm</span>
+          </>
+        ) : (
+          <>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-300 shadow-[0_0_8px_rgba(252,165,165,0.6)]" />Mệnh gốc</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-teal-300 shadow-[0_0_8px_rgba(45,212,191,0.5)]" />Thân</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-violet-300 shadow-[0_0_8px_rgba(167,139,250,0.5)]" />Mệnh + Thân</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-rose-300 shadow-[0_0_8px_rgba(251,113,133,0.5)]" />Mệnh quái</span>
+          </>
+        )}
+        <span className="w-full text-center text-[10px] text-[var(--text-muted)]/70 md:w-auto md:text-left">Click một cung để xem Lộc/Kỵ.</span>
+      </div>
     </div>
   );
 }

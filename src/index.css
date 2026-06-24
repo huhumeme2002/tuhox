@@ -414,11 +414,13 @@ body::after {
 }
 
 .imperial-tab-active {
-  background: linear-gradient(135deg, rgba(243, 210, 122, 0.95), rgba(212, 175, 55, 0.92), rgba(159, 111, 23, 0.92));
+  background: linear-gradient(135deg, rgba(243, 210, 122, 0.98), rgba(212, 175, 55, 0.96), rgba(159, 111, 23, 0.96));
   color: #1f1400;
   box-shadow:
-    0 12px 24px rgba(2, 6, 23, 0.28),
-    inset 0 1px 0 rgba(255, 248, 220, 0.7);
+    0 14px 28px rgba(2, 6, 23, 0.32),
+    0 0 20px rgba(243, 210, 122, 0.22),
+    inset 0 1px 0 rgba(255, 248, 220, 0.75);
+  font-weight: 700;
 }
 
 .imperial-ui {

@@ -77,6 +77,7 @@ export function BirthForm({ onSubmit }: Props) {
   const [year, setYear] = useState(2003);
   const [birthTime, setBirthTime] = useState('11:30');
   const [gender, setGender] = useState<'Nam' | 'Nữ'>('Nữ');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const maxDay = useMemo(() => new Date(year, month, 0).getDate(), [year, month]);
   const days = useMemo(() => Array.from({ length: maxDay }, (_, i) => i + 1), [maxDay]);
@@ -88,8 +89,14 @@ export function BirthForm({ onSubmit }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     const birthDate = `${year}-${pad(month)}-${pad(safeDay)}`;
-    onSubmit({ name, birthDate, birthTime, gender });
+    setIsSubmitting(true);
+    // Small delay so the loading state is visible before the heavy chart render blocks the UI.
+    window.setTimeout(() => {
+      onSubmit({ name, birthDate, birthTime, gender });
+      setIsSubmitting(false);
+    }, 250);
   };
 
   return (
@@ -198,9 +205,36 @@ export function BirthForm({ onSubmit }: Props) {
         <div className="md:col-span-3 flex items-end">
           <button
             type="submit"
-            className="feng-button-primary w-full rounded-xl px-8 py-3 font-semibold md:w-auto"
+            disabled={isSubmitting}
+            className="feng-button-primary inline-flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-80 md:w-auto"
           >
-            Lập lá số
+            {isSubmitting ? (
+              <>
+                <svg
+                  className="h-4 w-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                <span>Đang lập lá số...</span>
+              </>
+            ) : (
+              'Lập lá số'
+            )}
           </button>
         </div>
       </div>
