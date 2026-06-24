@@ -1813,6 +1813,7 @@ export function TuViBoard({ chart }: Props) {
   const displayYearCanMap = isQuaiMode ? quaiInfo?.canMap ?? null : yearInfo?.yearCanMap ?? null;
   const displayRoleNameOnBoard = isQuaiMode ? getQuaiRoleName : getYearRoleName;
   const badKyLabels = new Set(((isQuaiMode ? quaiBadKy : badKy) ?? []).map((item) => item.label));
+  const boardPalaceOrder = [5, 6, 7, 8, 4, 9, 3, 10, 2, 1, 0, 11] as const;
   const renderBoardPalace = (index: number) => (
     <PalaceComponent
       palace={getPalace(index)}
@@ -1824,8 +1825,46 @@ export function TuViBoard({ chart }: Props) {
       activeMenhIndex={displayActiveMenhIndex}
       activeMenhLabel={displayActiveMenhLabel}
       yearRoleName={displayRoleNameOnBoard?.(index) ?? null}
+      isSelected={selectedCungIndex === index}
       onSelect={() => setSelectedCungIndex(index)}
     />
+  );
+
+  const boardCenterCard = (
+    <div className="feng-medallion flex flex-col items-center justify-center rounded-[1.35rem] p-3 text-center md:p-4">
+      <span className="feng-kicker !bg-amber-900/6 !text-amber-900 !shadow-none">Trung tâm lá số</span>
+      <h3 className="mt-3 font-serif text-base font-bold text-amber-950 md:text-lg">Tứ Hóa Phái</h3>
+      <p className="mt-1 font-serif text-sm font-semibold text-slate-800 md:text-base">{chart.name || 'Vô danh'}</p>
+      <p className="text-[10px] md:text-xs text-slate-600">{chart.canChi.year} · {chart.amDuong}</p>
+      <div className="mt-3 space-y-1 text-xs md:text-sm">
+        <p><span className="font-semibold text-red-700">{chart.menhCung.label}:</span> {chart.menhCung.chi}</p>
+        <p><span className="font-semibold text-blue-700">{chart.thanCung.label}:</span> {chart.thanCung.chi}</p>
+        <p className="font-serif text-base font-bold text-amber-900 md:text-lg">{chart.menhCuc}</p>
+      </div>
+      {!isQuaiMode && selectedDaiVan !== null && (
+        <p className="mt-3 rounded-full bg-amber-100/80 px-3 py-1 text-xs font-semibold text-amber-900 ring-1 ring-amber-200 md:text-sm">
+          Đang xem Đại Vận {selectedDaiVan}
+        </p>
+      )}
+      {!isQuaiMode && yearInfo && (
+        <p className="mt-2 rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-800 ring-1 ring-rose-200 md:text-sm">
+          Đang xem năm {selectedYear}: Mệnh năm {palaces[yearInfo.chiIndex].name}
+        </p>
+      )}
+      {isQuaiMode && quaiInfo && (
+        <>
+          <p className="mt-3 rounded-full bg-rose-100/80 px-3 py-1 text-xs font-semibold text-rose-800 ring-1 ring-rose-200 md:text-sm">
+            Mệnh quái tại {palaces[quaiInfo.chiIndex].chi} · {getQuaiDisplayName(quaiInfo.chiIndex)}
+          </p>
+          <p className="mt-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 md:text-sm">
+            Người B: {quaiBirthYear} ({quaiInfo.can} {quaiInfo.chi})
+          </p>
+        </>
+      )}
+      <p className="mt-2 text-[10px] md:text-xs text-slate-500">
+        {selectedCungIndex !== null ? 'Cung đang xem sẽ được viền đậm trên lá số.' : 'Chạm một cung để mở phần phân tích bên dưới.'}
+      </p>
+    </div>
   );
 
   return (
@@ -2394,7 +2433,38 @@ export function TuViBoard({ chart }: Props) {
 
       {/* 12-palace board - Tứ Hóa Phái layout */}
       <div className="feng-board mx-auto mt-6 max-w-5xl rounded-[1.6rem] p-3 md:p-5">
-      <div className="relative z-10 mx-auto grid max-w-4xl grid-cols-4 gap-2 md:gap-3">
+      <div className="relative z-10 mb-3 md:hidden">
+        <div className="mb-3 rounded-2xl border border-amber-200/70 bg-white/90 p-3 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Lá số mobile</p>
+              <h4 className="mt-1 font-serif text-base font-bold text-amber-950">Danh sách cung dễ đọc hơn</h4>
+            </div>
+            {selectedRoleName && (
+              <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-900 ring-1 ring-amber-200">
+                Đang xem: {selectedRoleName}
+              </span>
+            )}
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-slate-600">
+            Trên mobile, các cung được trải thành lưới 2 cột để đọc sao và trạng thái rõ hơn. Phần phân tích bên dưới không thay đổi.
+          </p>
+        </div>
+
+        <div className="mb-3">
+          {boardCenterCard}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {boardPalaceOrder.map((index) => (
+            <div key={`mobile-palace-${index}`}>
+              {renderBoardPalace(index)}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative z-10 mx-auto hidden max-w-4xl grid-cols-4 gap-2 md:grid md:gap-3">
         {/* Row 1: Tỵ -> Thân */}
         {renderBoardPalace(5)}
         {renderBoardPalace(6)}

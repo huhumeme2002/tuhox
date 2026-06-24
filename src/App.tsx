@@ -8,7 +8,7 @@ const thienBanWatermark = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
 function TuHoaHeroLogo() {
   return (
-    <div className="mx-auto flex w-full max-w-[320px] items-center justify-center md:max-w-[380px]">
+    <div className="mx-auto flex w-full max-w-[150px] items-center justify-center md:max-w-[190px]">
       <svg
         viewBox="0 0 320 320"
         role="img"
@@ -99,11 +99,11 @@ function App() {
     : 'empty';
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-3 py-6 md:px-4 md:py-10">
+    <div className="relative min-h-screen overflow-hidden px-3 py-4 md:px-4 md:py-8">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.14),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(180,83,9,0.08),_transparent_30%)]" />
         <div
-          className="absolute left-1/2 top-[-120px] h-[560px] w-[560px] -translate-x-1/2 rounded-full opacity-70"
+          className="absolute left-1/2 top-[-180px] h-[420px] w-[420px] -translate-x-1/2 rounded-full opacity-70 md:top-[-160px] md:h-[520px] md:w-[520px]"
           style={{
             backgroundImage: thienBanWatermark,
             backgroundRepeat: 'no-repeat',
@@ -123,8 +123,8 @@ function App() {
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/40 to-transparent" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl space-y-6">
-        <header className="feng-hero rounded-[1.6rem] px-5 py-8 text-center md:px-8 md:py-11">
+      <div className="relative mx-auto max-w-7xl space-y-5">
+        <header className="feng-hero rounded-[1.45rem] px-4 py-4 text-center md:px-6 md:py-5">
           <div className="relative z-10 flex items-center justify-center">
             <h1 className="sr-only">Lập Lá Số Tử Vi Tứ Hóa Phái</h1>
             <TuHoaHeroLogo />

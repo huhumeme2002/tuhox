@@ -21,10 +21,23 @@ interface Props {
   activeMenhIndex?: number | null;
   activeMenhLabel?: string | null;
   yearRoleName?: string | null;
+  isSelected?: boolean;
   onSelect?: () => void;
 }
 
-export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affectedDaiVan, yearCanMap, activeMenhIndex, activeMenhLabel, yearRoleName, onSelect }: Props) {
+export function Palace({
+  palace,
+  daiVanCungIndex,
+  locKyMap,
+  daiVanLocKyMap,
+  affectedDaiVan,
+  yearCanMap,
+  activeMenhIndex,
+  activeMenhLabel,
+  yearRoleName,
+  isSelected = false,
+  onSelect,
+}: Props) {
   const { index, name, can, chi, isMenh, isThan, daiVan, stars } = palace;
   const displayCan = yearCanMap?.[index] ?? can;
   const isActiveMenh = activeMenhIndex === index;
@@ -80,11 +93,16 @@ export function Palace({ palace, daiVanCungIndex, locKyMap, daiVanLocKyMap, affe
     ? 'text-blue-800 font-serif'
     : 'text-amber-950 font-serif';
 
+  const selectedClass = isSelected
+    ? 'border-amber-500 ring-4 ring-amber-300/65 shadow-2xl shadow-amber-200/60'
+    : '';
+
   return (
     <button
       type="button"
+      aria-pressed={isSelected}
       onClick={onSelect}
-      className={`palace-card relative flex min-h-[188px] flex-col rounded-[1rem] border-2 p-2 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-500/80 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-amber-400 md:min-h-[228px] md:p-3 ${borderClass}`}
+      className={`palace-card relative flex min-h-[168px] flex-col rounded-[1rem] border-2 p-2 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-500/80 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-amber-400 sm:min-h-[188px] md:min-h-[228px] md:p-3 ${borderClass} ${selectedClass}`}
     >
       {/* Đại vận ở góc phải trên */}
       {daiVan !== undefined && (
