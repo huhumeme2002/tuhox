@@ -1768,39 +1768,39 @@ export function TuViBoard({ chart }: Props) {
       .filter((item) => !hideMenhImpacts || !item.target.startsWith('Mệnh'));
 
     return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h4 className="text-sm font-bold text-slate-900 md:text-base font-serif">{title}</h4>
-      <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-muted)] md:text-sm">{description}</p>
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Lộc</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {locItems.map((item) => (
-              <span
-                key={`${prefixLoc}-${item.level}`}
-                className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 ring-1 ring-blue-200"
-              >
-                {prefixLoc}{item.level} {item.target}
-              </span>
-            ))}
+      <div className="rounded-2xl border border-[rgba(243,210,122,0.18)] bg-[linear-gradient(180deg,rgba(15,23,42,0.94),rgba(15,23,42,0.78))] p-4 shadow-[0_18px_36px_rgba(2,6,23,0.3)]">
+        <h4 className="font-serif text-sm font-bold text-[var(--text-main)] md:text-base">{title}</h4>
+        <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-muted)] md:text-sm">{description}</p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className="rounded-xl border border-emerald-400/18 bg-emerald-500/6 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-300">Lộc</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {locItems.map((item) => (
+                <span
+                  key={`${prefixLoc}-${item.level}`}
+                  className="inline-flex items-center rounded-full bg-emerald-500/14 px-3 py-1 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-300/22"
+                >
+                  {prefixLoc}{item.level} {item.target}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-red-700">Kỵ</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {kyItems.map((item) => (
+          <div className="rounded-xl border border-red-400/18 bg-red-500/6 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-red-300">Kỵ</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {kyItems.map((item) => (
                 <span
                   key={`${prefixKy}-${item.level}`}
-                  className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-800 ring-1 ring-red-200"
+                  className="inline-flex items-center rounded-full bg-red-500/14 px-3 py-1 text-xs font-semibold text-red-100 ring-1 ring-red-300/22"
                 >
                   {item.label} {item.target}
-                  {kyWarnings.has(item.label) && <span className="ml-1 text-[10px] font-bold text-red-600">(hãm)</span>}
+                  {kyWarnings.has(item.label) && <span className="ml-1 text-[10px] font-bold text-red-200">(hãm)</span>}
                 </span>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
     );
   };
 
@@ -2289,30 +2289,35 @@ export function TuViBoard({ chart }: Props) {
       </div>
 
       {/* 12-palace board - Tứ Hóa Phái layout */}
-      <div className="feng-board mx-auto mt-6 max-w-5xl rounded-[1.6rem] p-3 md:p-5">
-      <div className="relative z-10 mx-auto grid max-w-4xl grid-cols-4 gap-2 md:gap-3">
-        {/* Row 1: Tỵ -> Thân */}
-        {renderBoardPalace(5)}
-        {renderBoardPalace(6)}
-        {renderBoardPalace(7)}
-        {renderBoardPalace(8)}
+      <div className="mx-auto mt-6 max-w-5xl">
+        <div className="board-scroll-shell overflow-x-auto pb-3">
+          <div className="feng-board mx-auto min-w-[860px] rounded-[1.6rem] p-3 md:p-5">
+            <div className="relative z-10 mx-auto grid max-w-4xl grid-cols-4 gap-2 md:gap-3">
+              {/* Row 1: Tỵ -> Thân */}
+              {renderBoardPalace(5)}
+              {renderBoardPalace(6)}
+              {renderBoardPalace(7)}
+              {renderBoardPalace(8)}
 
-        {/* Row 2: Thìn + center + Dậu */}
-        {renderBoardPalace(4)}
-        <div className="col-span-2 row-span-2">
-          {boardCenterCard}
+              {/* Row 2: Thìn + center + Dậu */}
+              {renderBoardPalace(4)}
+              <div className="col-span-2 row-span-2">
+                {boardCenterCard}
+              </div>
+              {renderBoardPalace(9)}
+
+              {/* Row 3: Mão + center + Tuất */}
+              {renderBoardPalace(3)}
+              {renderBoardPalace(10)}
+
+              {/* Row 4: Dần -> Hợi (Tý Sửu ở giữa dưới) */}
+              {renderBoardPalace(2)}
+              {renderBoardPalace(1)}
+              {renderBoardPalace(0)}
+              {renderBoardPalace(11)}
+            </div>
+          </div>
         </div>
-        {renderBoardPalace(9)}
-
-        {/* Row 3: Mão + center + Tuất */}
-        {renderBoardPalace(3)}
-        {renderBoardPalace(10)}
-
-        {/* Row 4: Dần -> Hợi (Tý Sửu ở giữa dưới) */}
-        {renderBoardPalace(2)}
-        {renderBoardPalace(1)}
-        {renderBoardPalace(0)}
-        {renderBoardPalace(11)}
       </div>
 
       <div className="mx-auto mt-5 grid max-w-5xl gap-4 xl:grid-cols-2">
@@ -2335,7 +2340,6 @@ export function TuViBoard({ chart }: Props) {
           'LĐV',
           'KĐV'
         )}
-      </div>
       </div>
 
       {isQuaiMode && (
@@ -2589,21 +2593,22 @@ export function TuViBoard({ chart }: Props) {
       )}
 
       {selectedCungIndex !== null && !isQuaiMode && (
-        <details className="mx-auto mt-4 max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <summary className="cursor-pointer list-none bg-slate-50/90 p-4 md:p-5">
+        <details className="mx-auto mt-4 max-w-5xl overflow-hidden rounded-2xl border border-[rgba(243,210,122,0.18)] bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(15,23,42,0.76))] shadow-[0_18px_36px_rgba(2,6,23,0.3)]">
+          <summary className="cursor-pointer list-none bg-[linear-gradient(90deg,rgba(243,210,122,0.08),rgba(139,92,246,0.08))] p-4 md:p-5">
             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
               <div>
-                <h4 className="text-sm font-bold text-slate-900 md:text-base font-serif">Phân tích chi tiết mở rộng</h4>
+                <h4 className="font-serif text-sm font-bold text-[var(--text-main)] md:text-base">Phân tích chi tiết mở rộng</h4>
                 <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[var(--text-muted)] md:text-sm">
                   Giữ lại toàn bộ các lớp giải thích chi tiết, nhưng gom vào một khu riêng để phần đọc nhanh phía trên bớt rối.
                 </p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200 md:text-xs">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(243,210,122,0.28)] bg-[linear-gradient(135deg,rgba(243,210,122,0.18),rgba(212,175,55,0.12))] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--gold-soft)] shadow-[0_10px_20px_rgba(2,6,23,0.22)] md:text-xs">
+                <span className="h-2 w-2 rounded-full bg-[var(--gold-soft)] shadow-[0_0_10px_rgba(243,210,122,0.7)]" />
                 Mở khi cần xem đầy đủ
               </span>
             </div>
           </summary>
-          <div className="space-y-4 border-t border-slate-100 p-4 md:p-5">
+          <div className="space-y-4 border-t border-[rgba(243,210,122,0.14)] p-4 md:p-5">
 
       {(visibleKetLuan.tienThien.length > 0 || visibleKetLuan.daiVan.length > 0 || visibleKetLuan.nam.length > 0) && (
         <div className="max-w-4xl mx-auto mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs md:text-sm">
@@ -3287,8 +3292,15 @@ export function TuViBoard({ chart }: Props) {
         </div>
       )}
 
-      <div className="mx-auto mt-5 flex max-w-5xl flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-[1rem] border border-[rgba(243,210,122,0.14)] bg-[rgba(15,23,42,0.6)] px-4 py-3 text-[10px] text-[var(--text-muted)] md:text-xs">
-        <span className="font-semibold text-[var(--gold-soft)]">Chú thích màu cung:</span>
+      <div className="mx-auto mt-5 max-w-5xl rounded-[1rem] border border-[rgba(243,210,122,0.14)] bg-[rgba(15,23,42,0.6)] px-4 py-3">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--gold-soft)] md:text-xs">Chú thích màu cung</span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(243,210,122,0.24)] bg-[linear-gradient(135deg,rgba(243,210,122,0.14),rgba(139,92,246,0.12))] px-3 py-1 text-[10px] font-semibold text-[var(--gold-soft)] shadow-[0_10px_20px_rgba(2,6,23,0.2)] md:text-xs">
+            <span className="h-2 w-2 rounded-full bg-[var(--gold-soft)] shadow-[0_0_10px_rgba(243,210,122,0.7)]" />
+            Click một cung để xem Lộc/Kỵ
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] text-[var(--text-muted)] md:justify-start md:text-xs">
         {!isQuaiMode ? (
           <>
             <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-300 shadow-[0_0_8px_rgba(252,165,165,0.6)]" />Mệnh gốc</span>
@@ -3305,7 +3317,7 @@ export function TuViBoard({ chart }: Props) {
             <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-rose-300 shadow-[0_0_8px_rgba(251,113,133,0.5)]" />Mệnh quái</span>
           </>
         )}
-        <span className="w-full text-center text-[10px] text-[var(--text-muted)]/70 md:w-auto md:text-left">Click một cung để xem Lộc/Kỵ.</span>
+        </div>
       </div>
     </div>
   );

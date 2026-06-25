@@ -101,7 +101,7 @@ export function Palace({
             : 'text-[var(--text-main)] font-serif';
 
   const selectedClass = isSelected
-    ? 'z-20 border-[rgba(243,210,122,0.9)] ring-[6px] ring-[rgba(139,92,246,0.35)] shadow-[0_0_42px_rgba(212,175,55,0.32)] scale-[1.03]'
+    ? 'palace-card-selected z-20 border-[rgba(243,210,122,0.94)] ring-[6px] ring-[rgba(139,92,246,0.38)] scale-[1.03]'
     : '';
 
   return (
@@ -111,6 +111,13 @@ export function Palace({
       onClick={onSelect}
       className={`palace-card relative flex min-h-[168px] flex-col rounded-[1rem] border p-2 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-[rgba(243,210,122,0.56)] hover:shadow-[0_20px_42px_rgba(2,6,23,0.42)] focus:outline-none focus:ring-2 focus:ring-[rgba(243,210,122,0.4)] sm:min-h-[188px] md:min-h-[228px] md:p-3 ${borderClass} ${selectedClass}`}
     >
+      {isSelected && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-[-10px] z-0 rounded-[1.35rem] bg-[radial-gradient(circle_at_center,rgba(243,210,122,0.2),rgba(139,92,246,0.18),transparent_72%)] blur-xl"
+        />
+      )}
+
       {daiVan !== undefined && (
         <div className="absolute right-1.5 top-1.5 z-10">
           <span

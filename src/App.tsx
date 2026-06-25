@@ -127,22 +127,23 @@ function App() {
         <header className="feng-hero rounded-[1.65rem] px-4 py-7 md:px-8 md:py-9">
           <div className="relative z-10 grid items-center gap-6 md:grid-cols-[minmax(0,1.1fr)_220px] md:gap-8">
             <div className="text-center md:text-left">
-              <div className="feng-kicker">Imperial Dark Astrology UI</div>
+              <div className="feng-kicker">Lá số Tử Vi</div>
               <h1 className="mt-4 font-serif text-4xl font-bold tracking-tight text-[var(--text-main)] md:text-5xl">
                 Tử Hóa Phái
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--text-muted)] md:text-base">
                 Luận giải Lộc - Quyền - Khoa - Kỵ theo Tiên Thiên, Đại Vận, Lưu Niên và Nhập Quái.
               </p>
-              <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center md:justify-start">
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3 md:justify-start">
                 <a
                   href="#birth-form"
-                  className="feng-button-primary inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold"
+                  className="feng-button-primary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold"
                 >
-                  Lập lá số ngay
+                  <span>Lập lá số ngay</span>
+                  <span aria-hidden="true" className="text-base leading-none">→</span>
                 </a>
-                <span className="imperial-button-secondary inline-flex items-center rounded-xl px-4 py-3 text-xs font-medium text-[var(--text-muted)]">
-                  Giữ nguyên thuật toán, nâng cấp toàn bộ trải nghiệm hiển thị
+                <span className="imperial-chip rounded-full px-3 py-1.5 text-xs font-medium">
+                  Luận giải lá số theo giao diện cao cấp, tập trung và dễ đọc
                 </span>
               </div>
             </div>
@@ -156,11 +157,6 @@ function App() {
         <BirthForm onSubmit={handleSubmit} />
         {chart && <TuViBoard key={chartKey} chart={chart} />}
 
-        {!chart && (
-          <div className="feng-panel rounded-[1.35rem] px-5 py-10 text-center text-sm text-[var(--text-muted)] md:px-6">
-            Nhập thông tin và bấm <span className="font-semibold text-[var(--gold-soft)]">Lập lá số</span> để hiển thị bàn đồ và phần luận giải.
-          </div>
-        )}
       </div>
     </div>
   );

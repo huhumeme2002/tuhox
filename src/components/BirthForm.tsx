@@ -111,9 +111,6 @@ export function BirthForm({ onSubmit }: Props) {
             </p>
           </div>
         </div>
-        <div className="imperial-button-secondary inline-flex rounded-xl px-4 py-3 text-xs font-medium text-[var(--text-muted)]">
-          Form nhập liệu giữ nguyên logic, chỉ nâng cấp trình bày.
-        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">

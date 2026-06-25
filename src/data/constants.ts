@@ -113,7 +113,7 @@ export const CHINH_TINH = [
 
 // Màu theo ngũ hành sao (để hiển thị)
 export const STAR_COLORS: Record<string, string> = {
-  'Tử Vi': '#8B0000',
+  'Tử Vi': '#F87171',
   'Thiên Cơ': '#2E7D32',
   'Thái Dương': '#D32F2F',
   'Vũ Khúc': '#F9A825',
