@@ -16,18 +16,22 @@ function TuHoaHeroLogo() {
         className="h-auto w-full drop-shadow-[0_20px_40px_rgba(2,6,23,0.55)]"
       >
         <defs>
-          <linearGradient id="imperialGold" x1="0%" x2="100%" y1="0%" y2="100%">
+          <linearGradient id="heroBg" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#111936" />
+            <stop offset="100%" stopColor="#0B1020" />
+          </linearGradient>
+          <linearGradient id="heroBolt" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#A78BFA" />
+            <stop offset="45%" stopColor="#8B5CF6" />
+            <stop offset="100%" stopColor="#6D28D9" />
+          </linearGradient>
+          <linearGradient id="heroGold" x1="0%" x2="100%" y1="0%" y2="100%">
             <stop offset="0%" stopColor="#F8EFD2" />
-            <stop offset="38%" stopColor="#F3D27A" />
-            <stop offset="72%" stopColor="#D4AF37" />
-            <stop offset="100%" stopColor="#8A6318" />
+            <stop offset="45%" stopColor="#F3D27A" />
+            <stop offset="100%" stopColor="#D4AF37" />
           </linearGradient>
-          <linearGradient id="imperialViolet" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#0F172A" stopOpacity="0.2" />
-          </linearGradient>
-          <filter id="imperialGlow" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="12" result="blur" />
+          <filter id="heroGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="14" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -35,52 +39,24 @@ function TuHoaHeroLogo() {
           </filter>
         </defs>
 
-        <circle cx="160" cy="160" r="140" fill="rgba(11,16,32,0.75)" />
-        <circle cx="160" cy="160" r="126" fill="none" stroke="rgba(243,210,122,0.22)" strokeWidth="1.5" />
-        <circle cx="160" cy="160" r="110" fill="none" stroke="url(#imperialGold)" strokeWidth="7" />
-        <circle cx="160" cy="160" r="92" fill="none" stroke="rgba(248,239,210,0.44)" strokeWidth="1.2" />
-        <circle cx="160" cy="160" r="72" fill="url(#imperialViolet)" stroke="rgba(243,210,122,0.4)" strokeWidth="1.2" />
-
-        {[...Array(12)].map((_, index) => {
-          const angle = (index * 30 * Math.PI) / 180;
-          const x1 = 160 + Math.cos(angle) * 94;
-          const y1 = 160 + Math.sin(angle) * 94;
-          const x2 = 160 + Math.cos(angle) * 118;
-          const y2 = 160 + Math.sin(angle) * 118;
-          return (
-            <line
-              key={`tick-${index}`}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              stroke="rgba(243,210,122,0.88)"
-              strokeWidth={index % 3 === 0 ? 3.2 : 1.8}
-              strokeLinecap="round"
-            />
-          );
-        })}
-
-        {[45, 135, 225, 315].map((angle) => {
-          const rad = (angle * Math.PI) / 180;
-          const cx = 160 + Math.cos(rad) * 58;
-          const cy = 160 + Math.sin(rad) * 58;
-          return <circle key={`hoa-${angle}`} cx={cx} cy={cy} r="8" fill="url(#imperialGold)" filter="url(#imperialGlow)" />;
-        })}
-
-        <path
-          d="M160 90 L210 160 L160 230 L110 160 Z"
-          fill="rgba(11,16,32,0.55)"
-          stroke="rgba(248,239,210,0.48)"
-          strokeWidth="2.3"
+        <rect x="20" y="20" width="280" height="280" rx="70" fill="url(#heroBg)" />
+        <rect
+          x="26"
+          y="26"
+          width="268"
+          height="268"
+          rx="64"
+          fill="none"
+          stroke="rgba(243,210,122,0.22)"
+          strokeWidth="3"
         />
-        <circle cx="160" cy="160" r="24" fill="url(#imperialGold)" filter="url(#imperialGlow)" />
-        <circle cx="160" cy="160" r="10" fill="#fff7dd" />
         <path
-          d="M160 114 L160 206 M114 160 L206 160 M128 128 L192 192 M192 128 L128 192"
-          stroke="rgba(248,239,210,0.48)"
-          strokeWidth="1.6"
-          strokeLinecap="round"
+          d="M185 60L105 170H155L135 260L235 130H175L205 60H185Z"
+          fill="url(#heroBolt)"
+          stroke="url(#heroGold)"
+          strokeWidth="5"
+          strokeLinejoin="round"
+          filter="url(#heroGlow)"
         />
       </svg>
     </div>
@@ -100,7 +76,7 @@ function App() {
     : 'empty';
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-3 py-4 md:px-5 md:py-8">
+    <div className="app-shell relative min-h-screen px-3 py-4 md:px-5 md:py-8">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(243,210,122,0.08),_transparent_26%),radial-gradient(circle_at_82%_14%,_rgba(139,92,246,0.12),_transparent_24%),radial-gradient(circle_at_18%_84%,_rgba(20,184,166,0.08),_transparent_26%)]" />
         <div
