@@ -1,13 +1,13 @@
 {
-  "name": "Tứ Hóa Phái",
-  "short_name": "Tứ Hóa",
-  "description": "Ứng dụng lập lá số Tử Vi Tứ Hóa Phái, tối ưu để dùng như app trên điện thoại.",
+  "name": "Tử Hóa Phái",
+  "short_name": "Tử Hóa",
+  "description": "Ứng dụng lập lá số Tử Vi Tứ Hóa Phái, tối ưu để dùng như app trên điện thoại và desktop.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f6efe4",
-  "theme_color": "#78350f",
+  "background_color": "#0b1020",
+  "theme_color": "#0b1020",
   "icons": [
     {
       "src": "/icons/icon-192.png",

@@ -48,6 +48,12 @@ body {
 #root {
   width: 100%;
   min-height: 100vh;
+  overflow-x: clip;
+}
+
+.app-shell {
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 body::before,
@@ -107,6 +113,10 @@ body::after {
     0 30px 80px rgba(2, 6, 23, 0.55),
     inset 0 1px 0 rgba(248, 239, 210, 0.06),
     inset 0 0 0 1px rgba(243, 210, 122, 0.04);
+}
+
+.feng-shell-sticky {
+  overflow: visible;
 }
 
 .feng-shell::before,

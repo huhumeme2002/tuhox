@@ -1894,10 +1894,18 @@ export function TuViBoard({ chart }: Props) {
     </div>
   );
 
+  const scrollToSection = useCallback((sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (!element) return;
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
   return (
-    <div className="imperial-ui feng-shell mt-6 rounded-[1.35rem] p-3 md:p-5">
+    <div className="imperial-ui feng-shell feng-shell-sticky mt-6 rounded-[1.35rem] p-3 md:p-5">
+      <div className="grid gap-5 xl:items-start xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="min-w-0">
       {/* Header info */}
-      <div className="mb-5 space-y-4">
+      <div id="analysis-overview-section" className="mb-5 space-y-4 scroll-mt-24">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
           <section className="feng-panel rounded-[1.35rem] p-4 md:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -2289,7 +2297,7 @@ export function TuViBoard({ chart }: Props) {
       </div>
 
       {/* 12-palace board - Tứ Hóa Phái layout */}
-      <div className="mx-auto mt-6 max-w-5xl">
+      <div id="analysis-board-section" className="mx-auto mt-6 max-w-5xl scroll-mt-24">
         <div className="board-scroll-shell overflow-x-auto pb-3">
           <div className="feng-board mx-auto min-w-[860px] rounded-[1.6rem] p-3 md:p-5">
             <div className="relative z-10 mx-auto grid max-w-4xl grid-cols-4 gap-2 md:gap-3">
@@ -2593,7 +2601,7 @@ export function TuViBoard({ chart }: Props) {
       )}
 
       {selectedCungIndex !== null && !isQuaiMode && (
-        <details className="mx-auto mt-4 max-w-5xl overflow-hidden rounded-2xl border border-[rgba(243,210,122,0.18)] bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(15,23,42,0.76))] shadow-[0_18px_36px_rgba(2,6,23,0.3)]">
+        <details id="analysis-detail-section" className="mx-auto mt-4 max-w-5xl scroll-mt-24 overflow-hidden rounded-2xl border border-[rgba(243,210,122,0.18)] bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(15,23,42,0.76))] shadow-[0_18px_36px_rgba(2,6,23,0.3)]">
           <summary className="cursor-pointer list-none bg-[linear-gradient(90deg,rgba(243,210,122,0.08),rgba(139,92,246,0.08))] p-4 md:p-5">
             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
               <div>
@@ -3317,6 +3325,133 @@ export function TuViBoard({ chart }: Props) {
             <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-rose-300 shadow-[0_0_8px_rgba(251,113,133,0.5)]" />Mệnh quái</span>
           </>
         )}
+        </div>
+      </div>
+        </div>
+
+        <aside className="hidden self-start xl:sticky xl:top-5 xl:block">
+          <div className="space-y-3">
+            <section className="feng-panel rounded-[1.35rem] p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gold-soft)]/85">Điều hướng nhanh</p>
+              <h3 className="mt-1 font-serif text-lg font-bold text-[var(--text-main)]">Bảng điều hướng</h3>
+              <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">
+                Giữ các thao tác thường dùng ở cạnh phải để không phải kéo lên xuống liên tục.
+              </p>
+
+              <div className="mt-4 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('analysis-overview-section')}
+                  className="w-full rounded-xl border border-[rgba(243,210,122,0.18)] bg-[rgba(15,23,42,0.82)] px-3 py-2 text-left text-sm font-semibold text-[var(--text-main)] transition hover:border-[rgba(243,210,122,0.42)] hover:bg-[rgba(30,41,59,0.84)]"
+                >
+                  Tổng quan & bộ lọc
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('analysis-board-section')}
+                  className="w-full rounded-xl border border-[rgba(243,210,122,0.18)] bg-[rgba(15,23,42,0.82)] px-3 py-2 text-left text-sm font-semibold text-[var(--text-main)] transition hover:border-[rgba(243,210,122,0.42)] hover:bg-[rgba(30,41,59,0.84)]"
+                >
+                  Lá số 12 cung
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('analysis-detail-section')}
+                  disabled={selectedCungIndex === null || isQuaiMode}
+                  className="w-full rounded-xl border border-[rgba(243,210,122,0.18)] bg-[rgba(15,23,42,0.82)] px-3 py-2 text-left text-sm font-semibold text-[var(--text-main)] transition hover:border-[rgba(243,210,122,0.42)] hover:bg-[rgba(30,41,59,0.84)] disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  Chi tiết mở rộng
+                </button>
+              </div>
+            </section>
+
+            <section className="feng-panel rounded-[1.35rem] p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--gold-soft)]/85">Trạng thái hiện tại</p>
+              <div className="mt-3 space-y-2">
+                <div className="rounded-xl border border-[rgba(243,210,122,0.16)] bg-[rgba(15,23,42,0.72)] px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]/80">Đang xem</p>
+                  <p className="mt-1 text-sm font-bold text-[var(--gold-soft)]">{activeLayerLabel}</p>
+                </div>
+                <div className="rounded-xl border border-[rgba(243,210,122,0.16)] bg-[rgba(15,23,42,0.72)] px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]/80">Cung đang chọn</p>
+                  <p className="mt-1 text-sm font-bold text-[var(--text-main)]">{selectedRoleName ?? 'Chưa chọn cung'}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                {selectedCungIndex !== null && (
+                  <button
+                    type="button"
+                    aria-pressed={hideMenhImpacts}
+                    onClick={() => setHideMenhImpacts((value) => !value)}
+                    className={`w-full rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                      hideMenhImpacts
+                        ? 'bg-[linear-gradient(135deg,#f3d27a,#d4af37,#9f6f17)] text-[#211500]'
+                        : 'imperial-button-secondary text-[var(--text-main)]'
+                    }`}
+                  >
+                    {hideMenhImpacts ? 'Đang ẩn tác động của Mệnh' : 'Ẩn tác động của Mệnh'}
+                  </button>
+                )}
+
+                {viewMode === 'daiVan' && (selectedDaiVan !== null || currentDaiVan !== null) && selectedCungIndex !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setShowYearRanking((s) => !s)}
+                    className={`w-full rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                      showYearRanking
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                    }`}
+                  >
+                    {showYearRanking ? 'Ẩn năm đẹp/xấu' : 'Mở năm đẹp/xấu'}
+                  </button>
+                )}
+
+                {viewMode === 'quai' && quaiInfo && selectedCungIndex !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setShowQuaiYearRanking((s) => !s)}
+                    className={`w-full rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                      showQuaiYearRanking
+                        ? 'bg-violet-600 text-white hover:bg-violet-700'
+                        : 'bg-violet-100 text-violet-800 hover:bg-violet-200'
+                    }`}
+                  >
+                    {showQuaiYearRanking ? 'Ẩn năm tốt/xấu quái' : 'Mở năm tốt/xấu quái'}
+                  </button>
+                )}
+              </div>
+            </section>
+          </div>
+        </aside>
+      </div>
+
+      <div className="xl:hidden">
+        <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-3">
+          <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-[rgba(243,210,122,0.18)] bg-[rgba(8,14,30,0.9)] px-2 py-2 shadow-[0_24px_48px_rgba(2,6,23,0.4)] backdrop-blur-xl">
+            <button
+              type="button"
+              onClick={() => scrollToSection('analysis-overview-section')}
+              className="rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-main)] transition hover:bg-white/6"
+            >
+              Tổng quan
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('analysis-board-section')}
+              className="rounded-xl px-3 py-2 text-xs font-semibold text-[var(--gold-soft)] transition hover:bg-white/6"
+            >
+              Lá số
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('analysis-detail-section')}
+              disabled={selectedCungIndex === null || isQuaiMode}
+              className="rounded-xl px-3 py-2 text-xs font-semibold text-[var(--text-main)] transition hover:bg-white/6 disabled:opacity-40"
+            >
+              Chi tiết
+            </button>
+          </div>
         </div>
       </div>
     </div>
