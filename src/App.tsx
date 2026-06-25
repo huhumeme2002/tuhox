@@ -16,17 +16,16 @@ function TuHoaHeroLogo() {
         className="h-auto w-full drop-shadow-[0_20px_40px_rgba(2,6,23,0.55)]"
       >
         <defs>
-          <linearGradient id="imperialGold" x1="0%" x2="100%" y1="0%" y2="100%">
-            <stop offset="0%" stopColor="#F8EFD2" />
-            <stop offset="38%" stopColor="#F3D27A" />
-            <stop offset="72%" stopColor="#D4AF37" />
-            <stop offset="100%" stopColor="#8A6318" />
+          <linearGradient id="heroViolet" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stopColor="#A78BFA" />
+            <stop offset="45%" stopColor="#8B5CF6" />
+            <stop offset="100%" stopColor="#6D28D9" />
           </linearGradient>
-          <linearGradient id="imperialViolet" x1="0%" x2="100%" y1="0%" y2="100%">
+          <linearGradient id="heroVioletInner" x1="0%" x2="100%" y1="0%" y2="100%">
             <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.85" />
             <stop offset="100%" stopColor="#0F172A" stopOpacity="0.2" />
           </linearGradient>
-          <filter id="imperialGlow" x="-40%" y="-40%" width="180%" height="180%">
+          <filter id="heroGlow" x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="12" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
@@ -36,10 +35,10 @@ function TuHoaHeroLogo() {
         </defs>
 
         <circle cx="160" cy="160" r="140" fill="rgba(11,16,32,0.75)" />
-        <circle cx="160" cy="160" r="126" fill="none" stroke="rgba(243,210,122,0.22)" strokeWidth="1.5" />
-        <circle cx="160" cy="160" r="110" fill="none" stroke="url(#imperialGold)" strokeWidth="7" />
-        <circle cx="160" cy="160" r="92" fill="none" stroke="rgba(248,239,210,0.44)" strokeWidth="1.2" />
-        <circle cx="160" cy="160" r="72" fill="url(#imperialViolet)" stroke="rgba(243,210,122,0.4)" strokeWidth="1.2" />
+        <circle cx="160" cy="160" r="126" fill="none" stroke="rgba(139,92,246,0.32)" strokeWidth="1.5" />
+        <circle cx="160" cy="160" r="110" fill="none" stroke="url(#heroViolet)" strokeWidth="7" />
+        <circle cx="160" cy="160" r="92" fill="none" stroke="rgba(167,139,250,0.44)" strokeWidth="1.2" />
+        <circle cx="160" cy="160" r="72" fill="url(#heroVioletInner)" stroke="rgba(139,92,246,0.4)" strokeWidth="1.2" />
 
         {[...Array(12)].map((_, index) => {
           const angle = (index * 30 * Math.PI) / 180;
@@ -54,7 +53,7 @@ function TuHoaHeroLogo() {
               y1={y1}
               x2={x2}
               y2={y2}
-              stroke="rgba(243,210,122,0.88)"
+              stroke="rgba(139,92,246,0.88)"
               strokeWidth={index % 3 === 0 ? 3.2 : 1.8}
               strokeLinecap="round"
             />
@@ -65,20 +64,20 @@ function TuHoaHeroLogo() {
           const rad = (angle * Math.PI) / 180;
           const cx = 160 + Math.cos(rad) * 58;
           const cy = 160 + Math.sin(rad) * 58;
-          return <circle key={`hoa-${angle}`} cx={cx} cy={cy} r="8" fill="url(#imperialGold)" filter="url(#imperialGlow)" />;
+          return <circle key={`hoa-${angle}`} cx={cx} cy={cy} r="8" fill="url(#heroViolet)" filter="url(#heroGlow)" />;
         })}
 
         <path
           d="M160 90 L210 160 L160 230 L110 160 Z"
           fill="rgba(11,16,32,0.55)"
-          stroke="rgba(248,239,210,0.48)"
+          stroke="rgba(167,139,250,0.48)"
           strokeWidth="2.3"
         />
-        <circle cx="160" cy="160" r="24" fill="url(#imperialGold)" filter="url(#imperialGlow)" />
-        <circle cx="160" cy="160" r="10" fill="#fff7dd" />
+        <circle cx="160" cy="160" r="24" fill="url(#heroViolet)" filter="url(#heroGlow)" />
+        <circle cx="160" cy="160" r="10" fill="#EDE9FE" />
         <path
           d="M160 114 L160 206 M114 160 L206 160 M128 128 L192 192 M192 128 L128 192"
-          stroke="rgba(248,239,210,0.48)"
+          stroke="rgba(167,139,250,0.48)"
           strokeWidth="1.6"
           strokeLinecap="round"
         />
